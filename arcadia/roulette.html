@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roleta — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/roulette.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container rl-main">
+        <h1>🎡 <span class="accent">Roleta Europeia</span></h1>
+        <p class="muted">37 casas (0-36). Pleno paga 36x, cores/paridade 2x, dúzias 3x. Faça até 10 apostas por giro!</p>
+
+        <div class="rl-layout">
+            <section class="rl-wheel-wrap">
+                <div class="rl-result" id="rlResult">
+                    <div class="rl-number" id="rlNumber">?</div>
+                    <div class="rl-color" id="rlColor">—</div>
+                </div>
+                <div class="rl-history" id="rlHistory"></div>
+            </section>
+
+            <section class="rl-controls">
+                <h2>🎯 Suas apostas</h2>
+                <div id="betChips" class="bet-chips"><p class="muted">Nenhuma aposta. Clique na mesa.</p></div>
+                <div class="rl-total">Total apostado: <strong id="totalBet">0 AC</strong></div>
+                <button class="btn btn-primary btn-block" id="spinBtn">🎰 Girar!</button>
+                <button class="btn btn-outline btn-block" id="clearBets">Limpar apostas</button>
+                <div class="game-result" id="gameMessage"></div>
+            </section>
+        </div>
+
+        <!-- Mesa de apostas -->
+        <section class="rl-table">
+            <div class="rl-zero" data-type="straight" data-value="0">0</div>
+            <div class="rl-numbers" id="rlNumbers"></div>
+            <div class="rl-outsides">
+                <button data-type="low">1-18</button>
+                <button data-type="even">PAR</button>
+                <button data-type="red" class="red">VERMELHO</button>
+                <button data-type="black" class="black">PRETO</button>
+                <button data-type="odd">ÍMPAR</button>
+                <button data-type="high">19-36</button>
+            </div>
+            <div class="rl-outsides dozens">
+                <button data-type="dozen1">1ª dúzia</button>
+                <button data-type="dozen2">2ª dúzia</button>
+                <button data-type="dozen3">3ª dúzia</button>
+            </div>
+        </section>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/roulette.js"></script>
+</body>
+</html>

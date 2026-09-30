@@ -1,0 +1,81 @@
+/* ARCADIA - Blackjack Multiplayer */
+.bjmp-main { padding: 2rem 0 4rem; }
+.bjmp-main h1 { font-size: 2rem; margin-bottom: .4rem; }
+.accent { color: var(--primary); }
+.bjmp-main > .muted { margin-bottom: 1.5rem; }
+
+.bjmp-lobby {
+    display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.2rem; margin-bottom: 1.5rem;
+}
+.bjmp-join { display: flex; gap: .5rem; }
+.bjmp-join input {
+    width: 120px; padding: .6rem; text-transform: uppercase; letter-spacing: .2em;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+
+.bjmp-arena {
+    background: radial-gradient(ellipse at center, #14532d 0%, #052e16 80%);
+    border: 8px solid #78350f; border-radius: 24px; padding: 1.5rem;
+}
+.bjmp-header { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1rem; color: #d1fae5; }
+.bjmp-header .muted { color: rgba(255,255,255,.6); }
+
+.bjmp-players { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.2rem; }
+.bj-player {
+    background: rgba(0,0,0,.35); border: 2px solid rgba(255,255,255,.15);
+    border-radius: 14px; padding: .8rem 1rem; min-width: 180px;
+}
+.bj-player.my-turn { border-color: #fbbf24; box-shadow: 0 0 18px rgba(251,191,36,.4); }
+.bj-player.busted { opacity: .5; }
+.bj-player .bj-name { font-weight: 800; color: #fde68a; margin-bottom: .4rem; display: flex; justify-content: space-between; gap: .6rem; }
+.bj-player .bj-total { font-size: .8rem; background: rgba(0,0,0,.5); padding: .05rem .5rem; border-radius: 999px; }
+.bj-cards { display: flex; gap: .3rem; min-height: 70px; flex-wrap: wrap; }
+.bj-card {
+    width: 46px; height: 66px; border-radius: 8px;
+    background: linear-gradient(145deg, #fff, #e8e8e8);
+    box-shadow: 0 3px 8px rgba(0,0,0,.4);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-size: 1rem; font-weight: 700; color: #111;
+}
+.bj-card.red { color: #dc2626; }
+.bj-nrg { margin-top: .4rem; font-size: .8rem; color: #a5f3fc; }
+.bj-stand { margin-top: .3rem; font-size: .75rem; color: #86efac; }
+
+.bjmp-actions { display: flex; gap: .6rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem; }
+.nrg-badge { color: #a5f3fc; font-weight: 700; }
+.hidden { display: none !important; }
+
+.specials-panel {
+    background: rgba(0,0,0,.4); border: 1px solid rgba(167,139,250,.5);
+    border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+}
+.specials-panel h3 { color: #ddd6fe; font-size: .95rem; margin-bottom: .6rem; }
+.special-card {
+    display: flex; justify-content: space-between; align-items: center; gap: .6rem;
+    padding: .5rem .8rem; border-radius: 10px; margin-bottom: .4rem; font-size: .85rem;
+    background: rgba(255,255,255,.06);
+}
+.special-card.use-btn { padding: .3rem .8rem; }
+.special-card button {
+    padding: .3rem .8rem; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer;
+}
+.rar-comum { border-left: 3px solid #9ca3af; }
+.rar-raro { border-left: 3px solid #3b82f6; }
+.rar-super-raro { border-left: 3px solid #a855f7; }
+.rar-épico { border-left: 3px solid #f97316; }
+.rar-lendária { border-left: 3px solid #fbbf24; }
+.rar-cromática { border-left: 3px solid; border-image: linear-gradient(90deg, red, orange, yellow, green, cyan, blue, violet) 1; }
+
+.special-target { margin-top: .6rem; font-size: .85rem; }
+.special-target select { padding: .3rem .6rem; border-radius: 8px; background: var(--surface); color: var(--text); border: 1px solid var(--border); }
+
+.bjmp-log {
+    background: rgba(0,0,0,.4); border-radius: 12px; padding: .8rem;
+    max-height: 180px; overflow-y: auto; font-size: .85rem; color: #e5e7eb;
+    display: flex; flex-direction: column; gap: .3rem;
+}
+.bjmp-log .sys { color: rgba(255,255,255,.55); font-style: italic; }
+.bjmp-log b { color: #fde68a; }

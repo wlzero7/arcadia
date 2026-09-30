@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Corrida de Cavalos — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/racing.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container race-main">
+        <h1>🐎 <span class="accent">Corrida de Cavalos</span></h1>
+        <p class="muted">Multiplayer: aposte no seu cavalo favorito (carteira COOP) e torça junto!</p>
+
+        <div class="race-lobby">
+            <div class="race-create">
+                <button class="btn btn-primary" id="createRaceBtn">🏁 Criar corrida</button>
+            </div>
+            <div class="race-join">
+                <input type="text" id="joinCode" placeholder="CÓDIGO" maxlength="5">
+                <button class="btn btn-outline" id="joinRaceBtn">Entrar</button>
+            </div>
+        </div>
+
+        <section class="race-track-wrap hidden" id="raceWrap">
+            <div class="race-header">
+                <span>Código: <strong class="accent" id="raceCode">—</strong></span>
+                <span>💰 Pote: <strong id="racePot">0 AC</strong></span>
+                <button class="btn btn-primary hidden" id="startRaceBtn">🏁 Largar!</button>
+            </div>
+
+            <div class="race-track" id="raceTrack"></div>
+
+            <div class="race-bets">
+                <h3>🎫 Suas apostas</h3>
+                <div id="myBets" class="my-bets"></div>
+                <div class="bet-row hidden" id="betRow">
+                    <input type="number" id="betAmount" value="100" min="10">
+                    <button class="btn btn-primary" id="betBtn">Apostar no selecionado</button>
+                </div>
+            </div>
+
+            <div class="race-results hidden" id="raceResults"></div>
+        </section>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/racing.js"></script>
+</body>
+</html>

@@ -1,0 +1,29 @@
+/* ARCADIA - Ranking */
+.ranking-main { padding: 2rem 0 4rem; }
+.ranking-main h1 { font-size: 2rem; margin-bottom: .4rem; }
+.accent { color: var(--primary); }
+.ranking-main > .muted { margin-bottom: 1.5rem; }
+
+.ranking-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.2rem; max-width: 720px;
+}
+.ranking-header, .ranking-row {
+    display: grid; grid-template-columns: 50px 1fr 100px 130px;
+    gap: .8rem; align-items: center; padding: .6rem .8rem;
+}
+.ranking-header {
+    font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
+    color: var(--text-secondary); border-bottom: 1px solid var(--border);
+}
+.ranking-row { border-bottom: 1px solid rgba(255,255,255,.04); }
+.ranking-row:last-child { border-bottom: none; }
+.ranking-row .pos { font-weight: 700; color: var(--text-secondary); }
+.ranking-row.top1 .pos { color: #ffd700; }
+.ranking-row.top2 .pos { color: #c0c0c0; }
+.ranking-row.top3 .pos { color: #cd7f32; }
+.ranking-row .player { font-weight: 600; }
+.ranking-row .games { color: var(--text-secondary); font-size: .9rem; }
+.ranking-row .profit { font-weight: 700; text-align: right; }
+.ranking-row .profit.positive { color: var(--success); }
+.ranking-row .profit.negative { color: var(--danger); }

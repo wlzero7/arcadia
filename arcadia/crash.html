@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crash — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/crash.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container crash-main">
+        <h1>🚀 <span class="accent">Crash</span></h1>
+        <p class="muted">O multiplicador sobe sem parar. Saque antes do foguete explodir!</p>
+
+        <div class="crash-layout">
+            <section class="crash-controls">
+                <div class="field">
+                    <label>Aposta (AC)</label>
+                    <input type="number" id="betAmount" value="100" min="10">
+                </div>
+                <button class="btn btn-primary btn-block" id="startBtn">🚀 Decolar</button>
+                <button class="btn btn-success btn-block hidden" id="cashoutBtn">💰 Sacar</button>
+                <div class="game-result" id="gameMessage"></div>
+            </section>
+
+            <section class="crash-stage-wrap">
+                <div class="crash-stage" id="crashStage">
+                    <div class="crash-mult" id="crashMult">1.00x</div>
+                    <div class="crash-rocket" id="crashRocket">🚀</div>
+                    <div class="crash-stars" id="crashStars"></div>
+                </div>
+                <div class="crash-history" id="crashHistory"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/crash.js"></script>
+</body>
+</html>

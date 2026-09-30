@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Salas Multiplayer — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/rooms.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html">Jogos</a></li>
+                <li><a href="rooms.html" class="active">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container rooms-main">
+        <section class="rooms-hero">
+            <h1>Salas <span class="accent">Multiplayer</span></h1>
+            <p>Crie uma sala, chame os amigos e apostem todos do <strong>pote compartilhado</strong>. Quem deposita no pote, joga com o dinheiro do grupo. 🎲</p>
+        </section>
+
+        <div class="rooms-grid">
+            <!-- Criar sala -->
+            <section class="room-card create-card">
+                <h2>➕ Criar sala</h2>
+                <div class="field">
+                    <label>Nome da sala</label>
+                    <input type="text" id="roomName" placeholder="Sala dos amigos" maxlength="40">
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Jogo</label>
+                        <select id="roomGame">
+                            <option value="dice">🎲 Dados</option>
+                            <option value="coinflip">🪙 Cara ou Coroa</option>
+                            <option value="crash">🚀 Crash do Grupo</option>
+                            <option value="roulette">🎡 Roleta do Grupo</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Máx. jogadores</label>
+                        <input type="number" id="roomMax" value="8" min="2" max="16">
+                    </div>
+                </div>
+                <div class="field-row">
+                    <div class="field">
+                        <label>Aposta mín.</label>
+                        <input type="number" id="roomMin" value="10" min="10">
+                    </div>
+                    <div class="field">
+                        <label>Aposta máx.</label>
+                        <input type="number" id="roomMaxBet" value="1000" min="10">
+                    </div>
+                </div>
+                <button class="btn btn-primary btn-block" id="createRoomBtn">Criar sala</button>
+            </section>
+
+            <!-- Entrar -->
+            <section class="room-card join-card">
+                <h2>🔑 Entrar com código</h2>
+                <p class="muted">Peça o código de 6 letras ao anfitrião.</p>
+                <input type="text" id="joinCode" class="code-input" placeholder="ABC123" maxlength="6">
+                <button class="btn btn-primary btn-block" id="joinRoomBtn">Entrar na sala</button>
+                <h2 style="margin-top:1.5rem;">📋 Salas abertas</h2>
+                <div id="roomsList" class="rooms-list"><p class="muted">Nenhuma sala aberta ainda.</p></div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal da sala -->
+    <div class="modal-overlay" id="roomModal">
+        <div class="room-modal">
+            <div class="room-modal-header">
+                <div>
+                    <h2 id="mRoomName">Sala</h2>
+                    <p class="muted">Código: <strong class="accent" id="mRoomCode">------</strong>
+                       <button class="copy-btn" id="copyCode">copiar</button></p>
+                </div>
+                <button class="modal-close" id="leaveRoomBtn">✕ Sair</button>
+            </div>
+
+            <div class="pot-banner">
+                <div class="pot-label">💰 POTE COMPARTILHADO</div>
+                <div class="pot-value" id="mPot">0 AC</div>
+                <div class="pot-actions">
+                    <input type="number" id="stakeAmount" placeholder="Valor" min="10">
+                    <button class="btn btn-primary" id="stakeBtn">Depositar</button>
+                    <button class="btn btn-outline" id="withdrawBtn">Sacar stake</button>
+                </div>
+            </div>
+
+            <div class="room-columns">
+                <div class="room-col">
+                    <h3>👥 Jogadores</h3>
+                    <ul id="mPlayers" class="players-list"></ul>
+                </div>
+                <div class="room-col">
+                    <h3>🎮 Jogo</h3>
+                    <div id="gameArea" class="game-area"></div>
+                </div>
+                <div class="room-col">
+                    <h3>💬 Chat</h3>
+                    <div id="chatLog" class="chat-log"></div>
+                    <div class="chat-input-row">
+                        <input type="text" id="chatInput" placeholder="Mensagem..." maxlength="240">
+                        <button class="btn btn-primary" id="chatSend">➤</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="round-history">
+                <h3>📜 Últimas rodadas</h3>
+                <div id="roundHistory" class="rounds"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/rooms.js"></script>
+</body>
+</html>

@@ -1,0 +1,25 @@
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
+
+# Logs
+*.log
+
+# Variáveis de ambiente
+.env
+.env.*
+
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+
+# Compilados C/C++
+*.exe
+*.o
+*.obj

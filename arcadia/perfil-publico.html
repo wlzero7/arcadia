@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jogador — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container profile-main">
+        <div id="publicProfile"><p class="muted" style="text-align:center; padding:3rem;">Carregando perfil...</p></div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script>
+    (async () => {
+        const username = new URLSearchParams(location.search).get("u");
+        const box = document.getElementById("publicProfile");
+
+        if (!username) {
+            box.innerHTML = `<div class="empty-state">
+                <div class="empty-icon">🔍</div>
+                <h3>Jogador não informado</h3>
+                <p>Use o link <code>perfil-publico.html?u=username</code> para ver as estatísticas de alguém.</p>
+            </div>`;
+            return;
+        }
+
+        try {
+            const r = await fetch(`${window.API_URL}/api/games/public/${encodeURIComponent(username)}`);
+            const d = await r.json();
+            if (!r.ok) throw new Error(d.message);
+
+            const p = d.profile;
+            const GAME_ICON = { dice: "🎲", coinflip: "🪙", mines: "💣", crash: "🚀", blackjack: "🃏", roulette: "🎡", racing: "🐎" };
+            const signed = (v) => (Number(v) >= 0 ? "+" : "") + (Number(v) || 0).toLocaleString("pt-BR") + " AC";
+
+            const byGame = p.byGame.map((g) => `
+                <div class="bygame-row">
+                    <span class="bg-name">${GAME_ICON[g.game] || "🎮"} ${g.game}</span>
+                    <div class="bg-bar"><div style="width:60%"></div></div>
+                    <span>${g.games} rodadas</span>
+                    <span class="bg-net ${g.net >= 0 ? "pos" : "neg"}">${signed(g.net)}</span>
+                </div>`).join("");
+
+            box.innerHTML = `
+                <section class="profile-hero">
+                    <div class="profile-id">
+                        <div class="avatar">${p.avatar}</div>
+                        <div>
+                            <h1>${p.displayName}</h1>
+                            <p class="muted">@${p.username} · membro desde ${p.memberSince ? p.memberSince.slice(0, 10) : "?"}</p>
+                            <div class="xp-wrap">
+                                <span class="level-badge">Lv ${p.level}</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <div class="profile-grid">
+                    <section class="profile-card wide">
+                        <h2>📊 Estatísticas de ${p.displayName}</h2>
+                        <div class="stats-hero">
+                            <div class="stat-big ${p.net >= 0 ? "pos" : "neg"}">${signed(p.net)}</div>
+                            <div class="muted">Lucro total</div>
+                        </div>
+                        <div class="stats-grid">
+                            <div class="stat-box"><span class="muted">Partidas</span><strong>${p.totalGames}</strong></div>
+                            <div class="stat-box"><span class="muted">Vitórias</span><strong class="pos">${p.wins}</strong></div>
+                            <div class="stat-box"><span class="muted">🏆 Conquistas</span><strong>${p.achievements}</strong></div>
+                            <div class="stat-box"><span class="muted">⚔️ Duelos ganhos</span><strong>${p.duelWins}</strong></div>
+                            <div class="stat-box"><span class="muted">⚔️ Duelos perdidos</span><strong>${p.duelLosses}</strong></div>
+                        </div>
+                        <h3 style="margin-top:1.2rem; font-size:.95rem;">Por jogo</h3>
+                        <div class="stats-bygame">${byGame || '<span class="muted">Sem partidas ainda.</span>'}</div>
+                    </section>
+                </section>
+            `;
+        } catch (err) {
+            box.innerHTML = `<div class="empty-state">
+                <div class="empty-icon">👻</div>
+                <h3>${err.message || "Perfil não encontrado"}</h3>
+                <p>Confira o username e tente de novo.</p>
+            </div>`;
+        }
+    })();
+    </script>
+</body>
+</html>

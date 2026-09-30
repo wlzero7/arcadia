@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mines — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/mines.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mines-main">
+        <h1>💣 <span class="accent">Mines</span></h1>
+        <p class="muted">Abra células, evite as minas. Cada célula segura multiplica sua aposta. Saque quando quiser!</p>
+
+        <div class="mines-layout">
+            <!-- Controles -->
+            <section class="mines-controls">
+                <div class="field">
+                    <label>Aposta (AC)</label>
+                    <input type="number" id="betAmount" value="100" min="10">
+                </div>
+                <div class="field">
+                    <label>Minas (1-24)</label>
+                    <input type="number" id="minesCount" value="3" min="1" max="24">
+                </div>
+                <button class="btn btn-primary btn-block" id="startBtn">▶ Iniciar jogo</button>
+                <button class="btn btn-success btn-block hidden" id="cashoutBtn">💰 Sacar</button>
+
+                <div class="mines-info">
+                    <div><span class="muted">Multiplicador</span><strong id="currentMult">—</strong></div>
+                    <div><span class="muted">Próximo</span><strong id="nextMult">—</strong></div>
+                    <div><span class="muted">Ganho potencial</span><strong id="potential">—</strong></div>
+                </div>
+
+                <div class="game-result" id="gameMessage"></div>
+            </section>
+
+            <!-- Grid 5x5 -->
+            <section class="mines-board-wrap">
+                <div class="mines-board" id="minesBoard"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/mines.js"></script>
+</body>
+</html>

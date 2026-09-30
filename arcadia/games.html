@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Explore os jogos disponíveis no Arcadia"
+    >
+
+    <title>Jogos | Arcadia</title>
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/games.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <nav class="navbar container">
+
+            <a href="index.html" class="logo">
+                ARC<span>ADIA</span>
+            </a>
+
+            <ul class="nav-links">
+                <li>
+                    <a href="index.html">Início</a>
+                </li>
+
+                <li>
+                    <a href="games.html" class="active">
+                        Jogos
+                    </a>
+                </li>
+
+                <li>
+                    <a href="ranking.html">Ranking</a>
+                </li>
+
+                <li>
+                    <a href="#">Sobre</a>
+                </li>
+
+                <li>
+                    <a href="sobre.html">Sobre</a>
+                </li>
+            </ul>
+
+            <div class="wallet-preview">
+                <span>Saldo demo</span>
+
+               <strong id="walletBalance">
+    10.000 AC
+</strong>
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <!-- GAME HUB HEADER -->
+
+        <section class="games-hero">
+
+            <div class="container">
+
+                <p class="eyebrow">
+                    ARCADIA GAME HUB
+                </p>
+
+                <h1>
+                    Escolha seu jogo
+                </h1>
+
+                <p class="games-description">
+                    Explore os jogos do Arcadia utilizando
+                    créditos fictícios sem valor monetário real.
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- FILTERS -->
+
+        <section class="filters-section">
+
+            <div class="container">
+
+                <div class="game-filters">
+
+                    <button
+                        class="filter-button active"
+                        data-filter="all"
+                    >
+                        Todos
+                    </button>
+
+                    <button
+                        class="filter-button"
+                        data-filter="available"
+                    >
+                        Disponíveis
+                    </button>
+
+                    <button
+                        class="filter-button"
+                        data-filter="soon"
+                    >
+                        Em breve
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- GAMES -->
+
+        <section class="games-section">
+
+            <div class="container">
+
+                <div class="games-grid">
+
+
+                    <!-- DICE -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎲
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Dados
+                            </span>
+
+                            <h2>Dice</h2>
+
+                            <p>
+                                Escolha um número entre 1 e 6
+                                e tente prever o resultado
+                                do lançamento.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playDice"
+                            type="button"
+                        >
+                            Jogar Dice
+                        </button>
+
+                    </article>
+
+
+                    <!-- ROULETTE -->
+
+                    <!-- CRASH -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🚀
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Tempo real
+                            </span>
+
+                            <h2>Crash</h2>
+
+                            <p>
+                                O multiplicador sobe sem parar.
+                                Saque antes do foguete
+                                explodir no espaço.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playCrash"
+                            type="button"
+                        >
+                            Jogar Crash
+                        </button>
+
+                    </article>
+
+<!-- PLINKO -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎯
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Sorte
+                            </span>
+
+                            <h2>Plinko</h2>
+
+                            <p>
+                                Solte a bola entre os pinos e
+                                torça pelo 1000x. Três níveis
+                                de risco à sua escolha.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playPlinko"
+                            type="button"
+                        >
+                            Soltar a bola
+                        </button>
+
+                    </article>
+
+<!-- CORRIDA -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🐎
+                            </div>
+
+                            <span class="status available-status">
+                                Multiplayer
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Corrida
+                            </span>
+
+                            <h2>Cavalos</h2>
+
+                            <p>
+                                Barry, Clade, Lucy, Nicolas...
+                                Aposte no seu cavalo e torça
+                                com os amigos!
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playRacing"
+                            type="button"
+                        >
+                            Apostar na corrida
+                        </button>
+
+                    </article>
+
+                    <!-- DUELO -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                ⚔️
+                            </div>
+
+                            <span class="status available-status">
+                                x1
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Batalha
+                            </span>
+
+                            <h2>Duelo</h2>
+
+                            <p>
+                                Você contra seu amigo.
+                                Carteira própria de 1.000 AC.
+                                O primeiro a falir perde!
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playDuel"
+                            type="button"
+                        >
+                            Desafiar amigo
+                        </button>
+
+                    </article>
+
+                    <!-- BJ MULTIPLAYER -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎴
+                            </div>
+
+                            <span class="status available-status">
+                                Multiplayer
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Cartas
+                            </span>
+
+                            <h2>Blackjack MP</h2>
+
+                            <p>
+                                Mesa compartilhada com cartas
+                                especiais e NRG. Sabote os
+                                amigos e vença!
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playBjMp"
+                            type="button"
+                        >
+                            Jogar mesa
+                        </button>
+
+                    </article>
+
+<!-- BLACKJACK -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🃏
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Cartas
+                            </span>
+
+                            <h2>Blackjack</h2>
+
+                            <p>
+                                Chegue perto do 21 sem estourar.
+                                Blackjack paga 3:2 e o dealer
+                                para no 17.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playBlackjack"
+                            type="button"
+                        >
+                            Jogar Blackjack
+                        </button>
+
+                    </article>
+
+                    <!-- ROLETA -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎡
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Clássico
+                            </span>
+
+                            <h2>Roleta</h2>
+
+                            <p>
+                                37 casas, apostas plenas,
+                                cores, paridades e dúzias.
+                                Gire e torça!
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playRoulette"
+                            type="button"
+                        >
+                            Jogar Roleta
+                        </button>
+
+                    </article>
+
+<!-- MINES -->
+
+                    <article
+                        class="game-card available"
+                        data-status="available"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                💣
+                            </div>
+
+                            <span class="status available-status">
+                                Disponível
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Estratégia
+                            </span>
+
+                            <h2>Mines</h2>
+
+                            <p>
+                                Abra células, evite as minas
+                                e saque o multiplicador
+                                antes de explodir tudo.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="play-button"
+                            id="playMines"
+                            type="button"
+                        >
+                            Jogar Mines
+                        </button>
+
+                    </article>
+
+                    <article
+                        class="game-card"
+                        data-status="soon"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎡
+                            </div>
+
+                            <span class="status soon-status">
+                                Em breve
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Mesa
+                            </span>
+
+                            <h2>Roleta</h2>
+
+                            <p>
+                                Escolha números, cores e
+                                acompanhe o giro da roleta.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="disabled-button"
+                            type="button"
+                            disabled
+                        >
+                            Em desenvolvimento
+                        </button>
+
+                    </article>
+
+
+                    <!-- BLACKJACK -->
+
+                    <article
+                        class="game-card"
+                        data-status="soon"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🃏
+                            </div>
+
+                            <span class="status soon-status">
+                                Em breve
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Cartas
+                            </span>
+
+                            <h2>Blackjack</h2>
+
+                            <p>
+                                Enfrente a mesa e tente
+                                chegar o mais próximo
+                                possível de 21.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="disabled-button"
+                            type="button"
+                            disabled
+                        >
+                            Em desenvolvimento
+                        </button>
+
+                    </article>
+
+
+                    <!-- SLOTS -->
+
+                    <article
+                        class="game-card"
+                        data-status="soon"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🎰
+                            </div>
+
+                            <span class="status soon-status">
+                                Em breve
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Slots
+                            </span>
+
+                            <h2>Slots</h2>
+
+                            <p>
+                                Gire os símbolos e descubra
+                                diferentes combinações.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="disabled-button"
+                            type="button"
+                            disabled
+                        >
+                            Em desenvolvimento
+                        </button>
+
+                    </article>
+
+
+                    <!-- COIN FLIP -->
+
+                    <article
+                        class="game-card"
+                        data-status="soon"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                🪙
+                            </div>
+
+                            <span class="status soon-status">
+                                Em breve
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Instantâneo
+                            </span>
+
+                            <h2>Coin Flip</h2>
+
+                            <p>
+                                Escolha um lado e acompanhe
+                                o lançamento da moeda.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="disabled-button"
+                            type="button"
+                            disabled
+                        >
+                            Em desenvolvimento
+                        </button>
+
+                    </article>
+
+
+                    <!-- CRASH -->
+
+                    <article
+                        class="game-card"
+                        data-status="soon"
+                    >
+
+                        <div class="game-top">
+
+                            <div class="game-icon">
+                                💥
+                            </div>
+
+                            <span class="status soon-status">
+                                Em breve
+                            </span>
+
+                        </div>
+
+                        <div class="game-content">
+
+                            <span class="game-category">
+                                Multiplicador
+                            </span>
+
+                            <h2>Crash</h2>
+
+                            <p>
+                                Um jogo baseado em
+                                multiplicadores e decisões
+                                de saída.
+                            </p>
+
+                        </div>
+
+                        <button
+                            class="disabled-button"
+                            type="button"
+                            disabled
+                        >
+                            Em desenvolvimento
+                        </button>
+
+                    </article>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <footer class="footer">
+
+        <div class="container footer-content">
+
+            <p>
+                Arcadia é um projeto educacional.
+                ArcCoins não possuem valor monetário real.
+            </p>
+
+            <p>
+                Arcadia v0.1
+            </p>
+
+        </div>
+
+    </footer>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/games.js"></script>
+</body>
+
+</html>

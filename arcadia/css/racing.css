@@ -1,0 +1,64 @@
+/* ARCADIA - Corrida de Cavalos */
+.race-main { padding: 2rem 0 4rem; }
+.race-main h1 { font-size: 2rem; margin-bottom: .4rem; }
+.accent { color: var(--primary); }
+.race-main > .muted { margin-bottom: 1.5rem; }
+
+.race-lobby {
+    display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.2rem; margin-bottom: 1.5rem;
+}
+.race-join { display: flex; gap: .5rem; }
+.race-join input {
+    width: 120px; padding: .6rem; text-transform: uppercase; letter-spacing: .2em;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+
+.race-track-wrap {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1.5rem;
+}
+.race-header { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; }
+
+.race-track {
+    display: flex; flex-direction: column; gap: .5rem;
+    background: linear-gradient(180deg, #1e3a1e, #162816);
+    border-radius: 14px; padding: 1rem; border: 2px solid #78350f;
+    margin-bottom: 1.2rem;
+}
+.race-lane {
+    display: flex; align-items: center; gap: .6rem;
+    border-bottom: 2px dashed rgba(255,255,255,.12);
+    padding: .35rem 0; position: relative; min-height: 52px;
+}
+.race-lane:last-child { border-bottom: none; }
+.lane-horse {
+    font-size: 1.8rem; transition: left .4s linear; position: relative;
+    display: flex; align-items: center; gap: .4rem; min-width: 150px;
+}
+.lane-name { font-size: .85rem; font-weight: 700; color: #fde68a; white-space: nowrap; }
+.lane-odds { font-size: .75rem; color: rgba(255,255,255,.6); }
+.lane-bar { flex: 1; height: 10px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; }
+.lane-bar div { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 999px; transition: width .4s linear; }
+.race-lane.selected { background: rgba(124,58,237,.18); border-radius: 10px; }
+.lane-pick { margin-left: auto; }
+.lane-pick button {
+    padding: .25rem .7rem; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer; font-size: .8rem;
+}
+.lane-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.25); }
+.race-lane.winner { background: rgba(250,204,21,.15); border-radius: 10px; }
+
+.race-bets h3 { font-size: 1rem; margin-bottom: .6rem; }
+.my-bets { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .8rem; }
+.bet-entry { font-size: .85rem; padding: .4rem .8rem; background: var(--bg); border-radius: 8px; display: flex; justify-content: space-between; }
+.bet-row { display: flex; gap: .5rem; }
+.bet-row input { width: 130px; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+.hidden { display: none !important; }
+
+.race-results {
+    margin-top: 1rem; padding: 1rem; border-radius: 12px;
+    background: rgba(250,204,21,.08); border: 1px solid rgba(250,204,21,.4);
+    font-weight: 700;
+}

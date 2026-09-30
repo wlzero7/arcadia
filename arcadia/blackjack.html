@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/blackjack.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container bj-main">
+        <h1>🃏 <span class="accent">Blackjack</span></h1>
+        <p class="muted">Chegue o mais perto de 21 sem estourar. Blackjack paga 3:2. Dealer para no 17.</p>
+
+        <div class="bj-table">
+            <div class="bj-hand dealer">
+                <h3>🎩 Dealer <span id="dealerTotal" class="total"></span></h3>
+                <div class="cards" id="dealerCards"></div>
+            </div>
+
+            <div class="bj-message" id="gameMessage">Faça sua aposta</div>
+
+            <div class="bj-hand player">
+                <h3>Você <span id="playerTotal" class="total"></span></h3>
+                <div class="cards" id="playerCards"></div>
+            </div>
+        </div>
+
+        <div class="bj-controls">
+            <div class="bet-row" id="betRow">
+                <input type="number" id="betAmount" value="100" min="10">
+                <button class="btn btn-primary" id="dealBtn">🃏 Distribuir</button>
+            </div>
+            <div class="actions hidden" id="actionRow">
+                <button class="btn btn-primary" id="hitBtn">Comprar (Hit)</button>
+                <button class="btn btn-outline" id="standBtn">Parar (Stand)</button>
+                <button class="btn btn-outline" id="doubleBtn">Dobrar (2x)</button>
+            </div>
+            <button class="btn btn-primary hidden" id="newRoundBtn">Nova mão</button>
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/blackjack.js"></script>
+</body>
+</html>

@@ -1,0 +1,87 @@
+/* ARCADIA - Duelo */
+.duel-main { padding: 2rem 0 4rem; }
+.duel-main h1 { font-size: 2rem; margin-bottom: .4rem; }
+.accent { color: var(--primary); }
+.duel-main > .muted { margin-bottom: 1.5rem; }
+
+.duel-lobby {
+    display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 1.2rem; margin-bottom: 1.5rem;
+}
+.duel-join { display: flex; gap: .5rem; }
+.duel-join input {
+    width: 120px; padding: .6rem; text-transform: uppercase; letter-spacing: .2em;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+
+.duel-arena {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 20px; padding: 1.5rem;
+}
+.duel-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+
+.duel-fighters { display: grid; grid-template-columns: 1fr auto 1fr; gap: 1rem; align-items: center; margin-bottom: 1rem; }
+.fighter {
+    text-align: center; padding: 1rem; border-radius: 14px;
+    background: var(--bg); border: 2px solid var(--border);
+}
+.fighter.my-turn { border-color: var(--success); box-shadow: 0 0 20px rgba(16,185,129,.3); }
+.fighter-name { font-weight: 800; font-size: 1.1rem; }
+.fighter-balance { font-size: 1.6rem; font-weight: 800; color: var(--primary); margin-top: .3rem; }
+.duel-vs { font-size: 1.6rem; font-weight: 900; color: var(--danger); }
+
+.duel-turn { text-align: center; font-weight: 700; margin-bottom: 1rem; color: var(--text-secondary); }
+
+.duel-play {
+    background: var(--bg); border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+}
+.duel-game-pick { display: flex; gap: .5rem; margin-bottom: .8rem; flex-wrap: wrap; }
+.duel-game-pick button {
+    padding: .5rem 1rem; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); cursor: pointer; font-size: .9rem;
+}
+.duel-game-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.2); }
+.bet-row { display: flex; gap: .5rem; }
+.bet-row input { width: 130px; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.crash-target { margin-top: .6rem; }
+.crash-target input { width: 70px; padding: .3rem .5rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+
+.duel-log {
+    background: var(--bg); border-radius: 12px; padding: .8rem;
+    max-height: 220px; overflow-y: auto; font-size: .85rem;
+    display: flex; flex-direction: column; gap: .3rem;
+}
+.duel-log .sys { color: var(--text-secondary); font-style: italic; }
+.duel-log b { color: var(--primary); }
+
+.duel-result {
+    margin-top: 1rem; padding: 1.2rem; border-radius: 14px; text-align: center;
+    background: rgba(250,204,21,.1); border: 1px solid rgba(250,204,21,.5);
+    font-size: 1.3rem; font-weight: 800;
+}
+.hidden { display: none !important; }
+
+/* ===== v0.9.4 — Leilão ===== */
+.duel-auction {
+    background: rgba(139,92,246,.08);
+    border: 1px solid var(--primary);
+    border-radius: 14px; padding: 1rem; margin-bottom: 1rem;
+}
+.duel-auction h3 { color: var(--primary); font-size: 1rem; margin-bottom: .4rem; }
+.duel-auction p { color: var(--text-secondary); font-size: .8rem; margin-bottom: .8rem; line-height: 1.5; }
+.auction-slots { display: flex; flex-direction: column; gap: .4rem; margin-bottom: .8rem; }
+.auction-slot {
+    display: grid; grid-template-columns: 130px 1fr auto auto;
+    gap: .6rem; align-items: center;
+    padding: .5rem .8rem; background: var(--bg); border-radius: 10px;
+    font-size: .85rem; cursor: pointer; border: 2px solid transparent;
+}
+.auction-slot.selected { border-color: var(--primary); }
+.auction-slot .as-game { font-weight: 700; }
+.auction-slot .as-bids { font-size: .75rem; color: var(--text-secondary); text-align: right; }
+.auction-slot .as-lead { font-size: .75rem; font-weight: 700; }
+.auction-slot .as-lead.me { color: var(--success); }
+.auction-slot .as-lead.opp { color: var(--danger); }
+.auction-bid-row { display: flex; gap: .5rem; align-items: center; }
+.auction-bid-row input { width: 110px; padding: .5rem .7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }

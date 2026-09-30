@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plinko — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .plinko-main { padding: 2rem 0 4rem; }
+        .plinko-main h1 { font-size: 2rem; margin-bottom: .4rem; }
+        .accent { color: var(--primary); }
+        .plinko-main > .muted { color: var(--text-secondary); margin-bottom: 1.5rem; }
+
+        .plinko-layout { display: grid; grid-template-columns: 300px 1fr; gap: 1.5rem; align-items: start; }
+
+        .plinko-controls { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.2rem; }
+        .field { margin-bottom: .9rem; }
+        .field label { display: block; font-size: .8rem; color: var(--text-secondary); margin-bottom: .3rem; }
+        .field input { width: 100%; padding: .6rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+        .risk-row { display: flex; gap: .4rem; margin-bottom: 1rem; }
+        .risk-row button { flex: 1; padding: .55rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: .85rem; }
+        .risk-row button.selected { border-color: var(--primary); background: rgba(139,92,246,.2); }
+        .btn-block { width: 100%; }
+        .hidden { display: none !important; }
+        .game-result { margin-top: 1rem; text-align: center; font-weight: 600; min-height: 1.4rem; }
+        .game-result.win { color: var(--success); }
+        .game-result.loss { color: var(--danger); }
+
+        .plinko-stage-wrap { display: flex; flex-direction: column; align-items: center; gap: .8rem; }
+        .plinko-stage {
+            position: relative;
+            background: radial-gradient(ellipse at top, #1e1b4b 0%, #0d0a1a 70%);
+            border: 1px solid var(--border); border-radius: 16px;
+            padding: 1.2rem; width: min(560px, 100%);
+            display: flex; justify-content: center;
+        }
+        .plinko-board { position: relative; width: 100%; }
+        .plinko-pins { display: flex; flex-direction: column; align-items: center; gap: 0; }
+        .pin-row { display: flex; justify-content: center; gap: 28px; height: 26px; }
+        .pin { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,.55); margin-top: 10px; }
+        .plinko-ball {
+            position: absolute; width: 14px; height: 14px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fbbf24, #f59e0b);
+            box-shadow: 0 0 12px rgba(251,191,36,.8);
+            top: 6px; left: 50%; transform: translateX(-50%);
+            transition: none; z-index: 5;
+        }
+        .plinko-slots { display: flex; gap: 4px; margin-top: .6rem; }
+        .plinko-slot {
+            flex: 1; text-align: center; font-size: .68rem; font-weight: 700;
+            padding: .4rem .1rem; border-radius: 8px; color: #fff;
+            background: linear-gradient(180deg, #7c3aed, #5b21b6);
+        }
+        .plinko-slot.hit { animation: slotPop .5s ease; background: linear-gradient(180deg, #f59e0b, #d97706); }
+        @keyframes slotPop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+        .plinko-history { display: flex; gap: .35rem; flex-wrap: wrap; justify-content: center; }
+        .plinko-chip { padding: .2rem .6rem; border-radius: 999px; font-size: .75rem; font-weight: 700; background: var(--surface); border: 1px solid var(--border); }
+        .plinko-chip.big { color: var(--success); border-color: var(--success); }
+
+        @media (max-width: 800px) {
+            .plinko-layout { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container plinko-main">
+        <h1>🎯 <span class="accent">Plinko</span></h1>
+        <p class="muted">Solte a bola, cruze os pinos e torça para cair no 1000x! Escolha o risco: baixo (estável), médio ou alto (volátil).</p>
+
+        <div class="plinko-layout">
+            <section class="plinko-controls">
+                <div class="field">
+                    <label>Aposta (AC)</label>
+                    <input type="number" id="betAmount" value="100" min="10">
+                </div>
+                <label style="font-size:.8rem; color:var(--text-secondary);">Risco</label>
+                <div class="risk-row">
+                    <button data-risk="low">🟢 Baixo</button>
+                    <button data-risk="medium" class="selected">🟡 Médio</button>
+                    <button data-risk="high">🔴 Alto</button>
+                </div>
+                <button class="btn btn-primary btn-block" id="dropBtn">🎯 Soltar bola</button>
+                <div class="game-result" id="gameMessage"></div>
+            </section>
+
+            <section class="plinko-stage-wrap">
+                <div class="plinko-stage">
+                    <div class="plinko-board" id="plinkoBoard">
+                        <div class="plinko-pins" id="plinkoPins"></div>
+                        <div class="plinko-ball hidden" id="plinkoBall"></div>
+                    </div>
+                </div>
+                <div class="plinko-slots" id="plinkoSlots"></div>
+                <div class="plinko-history" id="plinkoHistory"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/plinko.js"></script>
+</body>
+</html>

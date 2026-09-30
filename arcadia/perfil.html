@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/profile.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container profile-main">
+        <!-- Cabeçalho do perfil -->
+        <section class="profile-hero">
+            <div class="profile-id">
+                <div class="avatar-wrap">
+                    <div class="avatar" id="profileAvatar">🎰</div>
+                    <button class="avatar-edit" id="editAvatarBtn">✏️</button>
+                    <div class="avatar-picker hidden" id="avatarPicker"></div>
+                </div>
+                <div>
+                    <h1 id="profileName">...</h1>
+                    <p class="muted" id="profileUsername">@...</p>
+                    <div class="xp-wrap">
+                        <span class="level-badge" id="profileLevel">Lv 1</span>
+                        <div class="xp-bar"><div id="xpBar"></div></div>
+                        <span class="muted" id="xpText">0 / 100 XP</span>
+                    </div>
+                </div>
+            </div>
+            <div class="wallets-row">
+                <div class="wallet-box"><span class="muted">💰 Solo</span><strong id="walletSolo">—</strong></div>
+                <div class="wallet-box"><span class="muted">🤝 Coop</span><strong id="walletCoop">—</strong></div>
+                <div class="wallet-box"><span class="muted">⚔️ Duelo</span><strong id="walletDuel">—</strong></div>
+            </div>
+            <button class="btn btn-outline" id="logoutBtn">Sair da conta</button>
+        </section>
+
+        <div class="profile-grid">
+            <!-- Conquistas -->
+            <section class="profile-card">
+                <h2>🏆 Conquistas</h2>
+                <div id="achievementsList" class="achievements"></div>
+            </section>
+
+            <!-- Missões -->
+            <section class="profile-card">
+                <h2>📅 Missões diárias</h2>
+                <div id="missionsDaily" class="missions"></div>
+                <h2 style="margin-top:1.2rem;">🗓️ Missões semanais</h2>
+                <div id="missionsWeekly" class="missions"></div>
+            </section>
+
+            <!-- Stats + Amigos -->
+            <section class="profile-card">
+                <h2>📊 Estatísticas</h2>
+                <div class="stats-row">
+                    <div><span class="muted">Partidas</span><strong id="stGames">—</strong></div>
+                    <div><span class="muted">Vitórias</span><strong id="stWins">—</strong></div>
+                    <div><span class="muted">Lucro</span><strong id="stNet">—</strong></div>
+                </div>
+                <h2 style="margin-top:1.2rem;">🤝 Amigos</h2>
+                <div class="field-row">
+                    <input type="text" id="friendUsername" placeholder="username">
+                    <button class="btn btn-primary" id="addFriendBtn">Adicionar</button>
+                </div>
+                <div id="friendRequests"></div>
+                <ul id="friendsList" class="friends-list"></ul>
+            </section>
+
+            <!-- Extrato -->
+            <section class="profile-card">
+                <h2>📜 Extrato (solo)</h2>
+                <div id="txList" class="tx-list"></div>
+            </section>
+
+            <!-- ESTATÍSTICAS (v0.9.3) -->
+            <section class="profile-card wide" id="statsSection">
+                <h2>📊 Estatísticas</h2>
+                <div class="stats-hero">
+                    <div class="stat-big ${Number(net) >= 0 ? "pos" : "neg"}" id="stNetBig">—</div>
+                    <div class="muted">Lucro total (todas as carteiras de jogo)</div>
+                </div>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-box"><span class="muted">Moedas na conta</span><strong id="stCoins">—</strong></div>
+                    <div class="stat-box"><span class="muted">Vitórias</span><strong id="stWinsBig" class="pos">—</strong></div>
+                    <div class="stat-box"><span class="muted">Derrotas</span><strong id="stLossesBig" class="neg">—</strong></div>
+                    <div class="stat-box"><span class="muted">Total apostado</span><strong id="stWagered">—</strong></div>
+                    <div class="stat-box"><span class="muted">Maior lucro (rodada)</span><strong id="stBestRound" class="pos">—</strong></div>
+                    <div class="stat-box"><span class="muted">Maior déficit (rodada)</span><strong id="stWorstRound" class="neg">—</strong></div>
+                    <div class="stat-box"><span class="muted">Melhor jogo</span><strong id="stBestGame">—</strong></div>
+                    <div class="stat-box"><span class="muted">Jogo mais jogado</span><strong id="stMostPlayed">—</strong></div>
+                    <div class="stat-box"><span class="muted">Jogo menos jogado</span><strong id="stLeastPlayed">—</strong></div>
+                    <div class="stat-box"><span class="muted">🏆 Conquistas</span><strong id="stAch">—</strong></div>
+                    <div class="stat-box"><span class="muted">⚔️ Vitórias no x1</span><strong id="stDuelWins">—</strong></div>
+                    <div class="stat-box"><span class="muted">🤝 Vitórias no multiplayer</span><strong id="stMpWins">—</strong></div>
+                </div>
+                <h3 style="margin-top:1.2rem; font-size:.95rem;">Por jogo</h3>
+                <div id="statsByGame" class="stats-bygame"></div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

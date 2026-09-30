@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blackjack Multiplayer — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/blackjack-mp.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container bjmp-main">
+        <h1>🃏 <span class="accent">Blackjack Multiplayer</span></h1>
+        <p class="muted">Mesa compartilhada! Compre cartas, use <strong>cartas especiais</strong> (30% de chance ao comprar) e gerencie seu <strong>NRG</strong>. Maior mão dentro do limite vence!</p>
+
+        <div class="bjmp-lobby" id="bjmpLobby">
+            <button class="btn btn-primary" id="createTableBtn">🃏 Criar mesa</button>
+            <div class="bjmp-join">
+                <input type="text" id="joinCode" placeholder="CÓDIGO" maxlength="5">
+                <button class="btn btn-outline" id="joinTableBtn">Entrar</button>
+            </div>
+        </div>
+
+        <section class="bjmp-arena hidden" id="bjmpArena">
+            <div class="bjmp-header">
+                <span>Mesa: <strong class="accent" id="tableCode">—</strong></span>
+                <span class="muted">Limite: <strong id="tableLimit">21</strong></span>
+                <button class="btn btn-primary hidden" id="startBtn">▶ Iniciar rodada</button>
+            </div>
+
+            <div class="bjmp-players" id="playersRow"></div>
+
+            <div class="bjmp-actions hidden" id="actionsRow">
+                <button class="btn btn-primary" id="hitBtn">Comprar (Hit)</button>
+                <button class="btn btn-outline" id="standBtn">Parar (Stand)</button>
+                <button class="btn btn-outline" id="specialsBtn">🎴 Cartas (<span id="specialsCount">0</span>)</button>
+                <span class="nrg-badge">⚡ NRG: <strong id="nrgValue">0</strong></span>
+            </div>
+
+            <div class="specials-panel hidden" id="specialsPanel">
+                <h3>🎴 Suas cartas especiais</h3>
+                <div id="specialsList"></div>
+                <div class="special-target hidden" id="specialTarget">
+                    <label>Alvo: <select id="targetSelect"></select></label>
+                    <span class="muted" id="pickCardHint"></span>
+                </div>
+            </div>
+
+            <div class="bjmp-log" id="bjLog"></div>
+        </section>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/blackjack-mp.js"></script>
+</body>
+</html>

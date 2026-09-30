@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <meta
+        name="description"
+        content="Dice - Arcadia Social Casino Simulator"
+    >
+
+    <title>Dice | Arcadia</title>
+
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/dice.css">
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <header class="header">
+
+        <nav class="navbar container">
+
+            <a href="index.html" class="logo">
+                ARC<span>ADIA</span>
+            </a>
+
+            <div class="game-navigation">
+
+                <a href="ranking.html">🏆 Ranking</a>
+                    <a href="perfil.html" style="margin-left:auto">👤 Perfil</a>
+                    <a href="games.html">
+                    ← Voltar aos jogos
+                </a>
+
+            </div>
+
+            <div class="wallet">
+
+                <span>Saldo</span>
+
+                <strong id="balance">
+                    10.000 AC
+                </strong>
+
+            </div>
+
+        </nav>
+
+    </header>
+
+
+    <main>
+
+        <section class="dice-page">
+
+            <div class="container">
+
+
+                <!-- GAME HEADER -->
+
+                <div class="game-header">
+
+                    <div>
+
+                        <p class="eyebrow">
+                            ARCADIA ORIGINAL
+                        </p>
+
+                        <h1>
+                            🎲 Dice
+                        </h1>
+
+                        <p>
+                            Escolha um número entre 1 e 6.
+                            Se acertar o resultado do dado,
+                            você recebe 5× o valor apostado.
+                        </p>
+
+                    </div>
+
+                </div>
+
+
+                <!-- GAME LAYOUT -->
+
+                <div class="dice-layout">
+
+
+                    <!-- GAME -->
+
+                    <section class="dice-game">
+
+                        <div class="dice-display">
+
+                            <div
+                                class="dice"
+                                id="dice"
+                            >
+                                ?
+                            </div>
+
+                            <p id="gameResult">
+                                Escolha um número para começar.
+                            </p>
+
+                        </div>
+
+
+                        <!-- NUMBER SELECTION -->
+
+                        <div class="game-section">
+
+                            <h2>
+                                Escolha seu número
+                            </h2>
+
+                            <div
+                                class="number-selector"
+                                id="numberSelector"
+                            >
+
+                                <button
+                                    class="number-button"
+                                    data-number="1"
+                                    type="button"
+                                >
+                                    1
+                                </button>
+
+                                <button
+                                    class="number-button"
+                                    data-number="2"
+                                    type="button"
+                                >
+                                    2
+                                </button>
+
+                                <button
+                                    class="number-button"
+                                    data-number="3"
+                                    type="button"
+                                >
+                                    3
+                                </button>
+
+                                <button
+                                    class="number-button"
+                                    data-number="4"
+                                    type="button"
+                                >
+                                    4
+                                </button>
+
+                                <button
+                                    class="number-button"
+                                    data-number="5"
+                                    type="button"
+                                >
+                                    5
+                                </button>
+
+                                <button
+                                    class="number-button"
+                                    data-number="6"
+                                    type="button"
+                                >
+                                    6
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- BET -->
+
+                        <div class="game-section">
+
+                            <label for="betAmount">
+                                Valor da aposta
+                            </label>
+
+                            <div class="bet-input-wrapper">
+
+                                <input
+                                    type="number"
+                                    id="betAmount"
+                                    min="10"
+                                    step="10"
+                                    value="100"
+                                >
+
+                                <span>
+                                    AC
+                                </span>
+
+                            </div>
+
+
+                            <div class="quick-bets">
+
+                                <button
+                                    type="button"
+                                    data-bet="50"
+                                >
+                                    50
+                                </button>
+
+                                <button
+                                    type="button"
+                                    data-bet="100"
+                                >
+                                    100
+                                </button>
+
+                                <button
+                                    type="button"
+                                    data-bet="500"
+                                >
+                                    500
+                                </button>
+
+                                <button
+                                    type="button"
+                                    data-bet="1000"
+                                >
+                                    1.000
+                                </button>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- PLAY -->
+
+                        <button
+                            class="roll-button"
+                            id="rollButton"
+                            type="button"
+                        >
+                            🎲 Lançar dado
+                        </button>
+
+
+                        <p
+                            class="game-message"
+                            id="gameMessage"
+                        ></p>
+
+                    </section>
+
+
+                    <!-- HISTORY -->
+
+                    <aside class="history-panel">
+
+                        <div class="history-header">
+
+                            <div>
+                                <span>SESSÃO</span>
+                                <h2>Histórico</h2>
+                            </div>
+
+                            <button
+                                id="clearHistory"
+                                type="button"
+                            >
+                                Limpar
+                            </button>
+
+                        </div>
+
+
+                        <div class="statistics">
+
+                            <div>
+                                <span>Jogadas</span>
+
+                                <strong id="totalGames">
+                                    0
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Vitórias</span>
+
+                                <strong id="totalWins">
+                                    0
+                                </strong>
+                            </div>
+
+                            <div>
+                                <span>Derrotas</span>
+
+                                <strong id="totalLosses">
+                                    0
+                                </strong>
+                            </div>
+
+                        </div>
+
+
+                        <div
+                            class="history-list"
+                            id="historyList"
+                        >
+
+                            <p class="empty-history">
+                                Nenhuma partida realizada.
+                            </p>
+
+                        </div>
+
+                    </aside>
+
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/dice.js"></script>
+</body>
+
+</html>

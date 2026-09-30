@@ -1,0 +1,112 @@
+/* ARCADIA - Salas Multiplayer */
+.rooms-main { padding: 2rem 0 4rem; }
+.rooms-main h1 { font-size: 2.2rem; margin-bottom: .5rem; }
+.accent { color: var(--primary); }
+.rooms-main > .rooms-grid { margin-top: 1.5rem; }
+.muted { color: var(--text-secondary); font-size: .9rem; }
+
+.rooms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.room-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
+.room-card h2 { margin-bottom: 1rem; font-size: 1.2rem; }
+.field { margin-bottom: .9rem; flex: 1; }
+.field label { display: block; font-size: .8rem; color: var(--text-secondary); margin-bottom: .3rem; }
+.field input, .field select {
+    width: 100%; padding: .6rem .8rem; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+}
+.field-row { display: flex; gap: .8rem; }
+.btn-block { width: 100%; margin-top: .5rem; }
+.code-input {
+    width: 100%; padding: .9rem; font-size: 1.6rem; text-align: center;
+    letter-spacing: .4em; text-transform: uppercase; border-radius: 12px;
+    border: 2px dashed var(--border); background: var(--bg); color: var(--text);
+    margin-bottom: .8rem;
+}
+.rooms-list { display: flex; flex-direction: column; gap: .5rem; max-height: 200px; overflow-y: auto; }
+.room-list-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .6rem .9rem; border-radius: 10px; background: var(--bg);
+    border: 1px solid var(--border); cursor: pointer;
+}
+.room-list-item:hover { border-color: var(--primary); }
+
+/* Modal da sala */
+.room-modal {
+    background: var(--surface); border-radius: 20px; padding: 1.5rem;
+    width: min(920px, 95vw); max-height: 92vh; overflow-y: auto;
+}
+.room-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
+.copy-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: .7rem; padding: 2px 8px; cursor: pointer; margin-left: .5rem; }
+.copy-btn:hover { color: var(--text); }
+
+.pot-banner {
+    background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(124,58,237,.05));
+    border: 1px solid var(--primary); border-radius: 14px;
+    padding: 1rem 1.2rem; margin-bottom: 1.2rem; text-align: center;
+}
+.pot-label { font-size: .75rem; letter-spacing: .15em; color: var(--text-secondary); }
+.pot-value { font-size: 2.4rem; font-weight: 800; color: var(--primary); margin: .2rem 0 .6rem; }
+.pot-actions { display: flex; gap: .5rem; justify-content: center; }
+.pot-actions input { width: 130px; padding: .5rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+
+.room-columns { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+.room-col h3 { font-size: .95rem; margin-bottom: .6rem; }
+.players-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+.players-list li {
+    display: flex; justify-content: space-between; padding: .5rem .8rem;
+    background: var(--bg); border-radius: 10px; font-size: .9rem;
+}
+.players-list .offline { opacity: .45; }
+.players-list .host-tag { color: var(--primary); font-size: .75rem; }
+
+.game-area { background: var(--bg); border-radius: 12px; padding: 1rem; min-height: 180px; display: flex; flex-direction: column; gap: .7rem; }
+.game-area .dice-big { font-size: 4rem; text-align: center; }
+.game-area .bet-row { display: flex; gap: .5rem; }
+.game-area input { flex: 1; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
+.number-pick { display: flex; gap: .4rem; justify-content: center; }
+.number-pick button {
+    width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--text); font-size: 1.1rem; cursor: pointer;
+}
+.number-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.2); }
+.side-pick { display: flex; gap: .5rem; justify-content: center; }
+.side-pick button { flex: 1; padding: .7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1rem; }
+.side-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.2); }
+.game-result { text-align: center; font-size: 1rem; min-height: 1.4rem; }
+.game-result.win { color: var(--success); }
+.game-result.loss { color: var(--danger); }
+
+.chat-log { background: var(--bg); border-radius: 12px; padding: .8rem; height: 220px; overflow-y: auto; font-size: .85rem; display: flex; flex-direction: column; gap: .35rem; }
+.chat-log .sys { color: var(--text-secondary); font-style: italic; font-size: .8rem; }
+.chat-log b { color: var(--primary); }
+.chat-input-row { display: flex; gap: .4rem; margin-top: .5rem; }
+.chat-input-row input { flex: 1; padding: .5rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+
+.rounds { display: flex; flex-direction: column; gap: .4rem; max-height: 160px; overflow-y: auto; }
+.round-item { display: flex; justify-content: space-between; padding: .45rem .8rem; border-radius: 10px; background: var(--bg); font-size: .85rem; }
+.round-item.win { border-left: 3px solid var(--success); }
+.round-item.loss { border-left: 3px solid var(--danger); }
+
+.toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--surface); border: 1px solid var(--primary); color: var(--text);
+    padding: .7rem 1.2rem; border-radius: 12px; transition: transform .3s ease; z-index: 200;
+}
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+@media (max-width: 800px) {
+    .rooms-grid, .room-columns { grid-template-columns: 1fr; }
+}
+
+/* Roleta do grupo (v0.9) */
+.rlm-out { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .6rem; }
+.rlm-out button { padding: .45rem .7rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: .8rem; }
+.rlm-out button.red { background: #dc2626; color: #fff; border-color: #dc2626; }
+.rlm-out button.black { background: #222; color: #fff; }
+.rlm-nums { display: grid; grid-template-columns: repeat(13, 1fr); gap: .25rem; margin-bottom: .7rem; }
+.rlm-nums button { aspect-ratio: 1; border: none; border-radius: 6px; color: #fff; font-size: .7rem; font-weight: 700; cursor: pointer; }
+.rlm-nums button.red { background: #dc2626; }
+.rlm-nums button.black { background: #222; }
+.rlm-nums button.green { background: #16a34a; }
+.rlm-bets { display: flex; flex-direction: column; gap: .25rem; margin-top: .5rem; font-size: .8rem; }
+.rlm-last { text-align: center; font-weight: 700; margin-bottom: .6rem; color: var(--primary); }

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <style>
+        .about-main { padding: 2.5rem 0 5rem; max-width: 860px; margin: 0 auto; }
+        .about-main h1 { font-size: 2.2rem; margin-bottom: .4rem; }
+        .about-main h1 span { color: var(--primary); }
+        .about-lead { color: var(--text-secondary); font-size: 1.05rem; line-height: 1.6; margin-bottom: 2rem; }
+
+        .about-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 1.5rem;
+            margin-bottom: 1.2rem;
+        }
+        .about-card h2 { font-size: 1.25rem; margin-bottom: .8rem; display: flex; align-items: center; gap: .5rem; }
+        .about-card h3 { font-size: 1rem; margin: 1rem 0 .4rem; color: var(--primary); }
+        .about-card p { color: var(--text-secondary); line-height: 1.7; margin-bottom: .6rem; }
+        .about-card p strong, .about-card li strong { color: var(--text); }
+        .about-card ul { padding-left: 1.2rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: .6rem; }
+        .about-card code {
+            background: var(--bg);
+            padding: .1rem .45rem;
+            border-radius: 6px;
+            font-size: .88em;
+            color: var(--secondary);
+        }
+        .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+        .badge-row { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .5rem; }
+        .about-badge {
+            font-size: .78rem;
+            padding: .25rem .7rem;
+            border-radius: 999px;
+            background: rgba(139,92,246,.12);
+            border: 1px solid rgba(139,92,246,.4);
+            color: #c4b5fd;
+        }
+        .about-warning {
+            border-left: 4px solid var(--primary);
+            background: rgba(139,92,246,.08);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            margin-top: 1rem;
+        }
+        .about-warning p { margin-bottom: 0; }
+        @media (max-width: 768px) {
+            .about-grid { grid-template-columns: 1fr; }
+            .about-main h1 { font-size: 1.7rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="sobre.html" class="active">Sobre</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container about-main">
+        <h1>🎲 Sobre o <span>Arcadia</span></h1>
+        <p class="about-lead">Um cassino social <strong>100% gratuito</strong> — sem compras, sem microtransações, sem dinheiro real.
+        Aqui você aposta <strong>ArcCoins (AC)</strong>, nossa moeda fictícia, e a diversão é jogar <strong>com os amigos</strong>.</p>
+
+        <section class="about-card">
+            <h2>💰 O que são ArcCoins?</h2>
+            <p>ArcCoins são créditos <strong>exclusivamente fictícios</strong>. Eles <strong>não</strong> têm valor monetário, <strong>não</strong> podem ser comprados, vendidos, sacados ou trocados por qualquer coisa real. Não são criptomoedas. O Arcadia existe para diversão e aprendizado — a única coisa em jogo é o orgulho. 😄</p>
+            <div class="badge-row">
+                <span class="about-badge">🎁 Conta nova começa com 10.000 AC</span>
+                <span class="about-badge">📅 Bônus diário até 7.000 AC (streak)</span>
+                <span class="about-badge">💸 Transfira AC para amigos</span>
+            </div>
+        </section>
+
+        <section class="about-card">
+            <h2>🪙 As três carteiras</h2>
+            <p>Cada modo do jogo tem carteira própria — o que você ganha num modo fica nele:</p>
+            <ul>
+                <li><strong>💰 Solo</strong> — começa com 10.000 AC. Usada em todos os jogos individuais (Dice, Mines, Crash, Blackjack, Roleta).</li>
+                <li><strong>🤝 Coop</strong> — usada nas <strong>salas multiplayer</strong> e nas <strong>corridas de cavalos</strong>. Você deposita no pote do grupo e joga com o dinheiro coletivo.</li>
+                <li><strong>⚔️ Duelo</strong> — começa com 1.000 AC. É a carteira do modo x1: você contra um amigo até alguém <strong>falir</strong>.</li>
+            </ul>
+            <p>Se zerar a carteira solo, resgate o <strong>bônus diário</strong> no Perfil — o streak aumenta a recompensa até 7 dias seguidos!</p>
+        </section>
+
+        <section class="about-card">
+            <h2>🎮 Como funciona cada jogo</h2>
+
+            <h3>🎲 Dice</h3>
+            <p>Escolha um número de 1 a 6 e uma aposta. O servidor rola o dado — se acertar, recebe <strong>6x</strong> o valor apostado. Simples e direto.</p>
+
+            <h3>🪙 Coin Flip</h3>
+            <p>Cara ou coroa, 50/50. Acertou, <strong>dobra</strong> (2x). O jogo mais honesto que existe.</p>
+
+            <h3>💣 Mines</h3>
+            <p>Um tabuleiro 5×5 esconde as minas que você escolher (1 a 24). A cada célula segura aberta, seu multiplicador sobe — mas se abrir uma mina, perde tudo. O segredo: <strong>sacar antes de explodir</strong>. Multiplicador justo calculado matematicamente a cada clique.</p>
+
+            <h3>🚀 Crash</h3>
+            <p>O foguete decola e o multiplicador sobe sem parar: 1.01x, 1.5x, 2x, 5x... Saque quando quiser e leve a aposta multiplicada. Se o foguete explodir antes do seu saque, você perde. Quanto mais espera, mais ganha — e mais arrisca.</p>
+
+            <h3>🃏 Blackjack</h3>
+            <p>Chegue o mais perto de <strong>21</strong> sem estourar. Compre cartas (Hit), pare (Stand) ou <strong>dobre</strong> a aposta (Double) com 2 cartas. O dealer compra até 17. Blackjack natural (A + 10) paga <strong>3:2</strong>. Empate devolve a aposta.</p>
+
+            <h3>🎴 Blackjack Multiplayer</h3>
+            <p>A mesma mesa, mas contra seus amigos — em tempo real! Ao comprar cartas, você tem <strong>30% de chance</strong> de sacar uma <strong>carta especial</strong> em 6 raridades: comum, rara, super-rara, épica, lendária e <strong>cromática</strong>. Use <strong>NRG</strong> (energia que regenera +2 por rodada) para ativar efeitos: forçar um amigo a comprar, remover a carta dele, mudar o limite da mesa de 21 para 28 ou 17, escolher uma carta do baralho... Maior mão dentro do limite vence!</p>
+
+            <h3>🎡 Roleta Europeia</h3>
+            <p>37 casas (0 a 36). Aposte em números exatos (<strong>pleno, 36x</strong>), cores (<strong>2x</strong>), par/ímpar, 1-18/19-36 (<strong>2x</strong>) ou dúzias (<strong>3x</strong>). Você pode fazer até 10 apostas por giro!</p>
+
+            <h3>🎡 Roleta do Grupo</h3>
+            <p>Nas salas multiplayer, todos apostam no <strong>mesmo giro</strong> e o <strong>pote compartilhado paga</strong> os prêmios. Gire e veja os amigos torcerem (ou chorarem) juntos.</p>
+
+            <h3>🐎 Corrida de Cavalos</h3>
+            <p>Multiplayer: 6 cavalos com nomes únicos (Barry, Clade, Lucy, Nicolas, Augusto, Trovão, Biscate, Cometa, Fuscão Preto, Relâmpago, Maradona...) correm em tempo real. Cada cavalo tem <strong>odds justas</strong> — o azarão paga mais. Aposte na carteira Coop e torça com a galera!</p>
+
+            <h3>⚔️ Duelo x1</h3>
+            <p>Desafie um amigo para uma <strong>batalha de apostas</strong>: cada um começa com 1.000 AC na carteira Duelo. Vocês alternam rodadas de Dice, Coin Flip ou Crash. <strong>O primeiro a falir (ficar sem AC) perde</strong> — e a vitória fica registrada nas estatísticas.</p>
+        </section>
+
+        <section class="about-card">
+            <h2>🫙 Como funciona o Pote Compartilhado</h2>
+            <p>É a mecânica central das salas multiplayer, inspirada no "Gamble With Your Friends":</p>
+            <ul>
+                <li><strong>1. Deposite</strong> — cada jogador coloca AC da própria carteira Coop no pote da sala.</li>
+                <li><strong>2. Aposte</strong> — qualquer jogador aposta <strong>do pote</strong>. Ganhou? O prêmio volta pro pote. Perdeu? O pote paga a conta.</li>
+                <li><strong>3. Saque</strong> — a qualquer momento você saca até o valor do seu próprio stake. Se o pote estiver vazio (alguém gastou tudo ganhando 😅), espere alguém depositar.</li>
+                <li><strong>4. Host</strong> — quem criou a sala comanda. Se sair, o próximo assume. Sala vazia fecha sozinha.</li>
+            </ul>
+            <div class="about-warning">
+                <p>💡 <strong>Dica:</strong> o pote é do grupo — se você ganhar demais, os amigos ficam sem saldo pra apostar. Compartilhar é cuidar!</p>
+            </div>
+        </section>
+
+        <section class="about-card">
+            <h2>📈 Progressão: XP, níveis, conquistas e missões</h2>
+            <ul>
+                <li><strong>XP e Nível</strong> — toda aposta rende XP. O nível sobe numa curva que vai até o <strong>nível 999</strong>. Cada nível exige mais XP que o anterior.</li>
+                <li><strong>🏆 Conquistas</strong> — 15 conquistas desbloqueiam sozinhas conforme você joga: primeira aposta, primeira vitória, sequências quentes, apostas altas, feitos em cada jogo e marcos de nível.</li>
+                <li><strong>📅 Missões Diárias</strong> — 4 missões que resetam todo dia (jogar rodadas, vencer rodadas, apostar volume, jogar Mines).</li>
+                <li><strong>🗓️ Missões Semanais</strong> — 4 missões maiores que resetam toda semana (100 rodadas, 30 vitórias, 5 salas, 1 duelo).</li>
+                <li><strong>📊 Estatísticas</strong> — seu perfil guarda lucro, déficit, melhor jogo, jogo favorito, vitórias em cada modo e conquistas desbloqueadas. Amigos podem ver!</li>
+            </ul>
+        </section>
+
+        <section class="about-card">
+            <h2>👥 Salas, amigos e ranking</h2>
+            <p>Crie uma <strong>sala</strong> e compartilhe o código de 6 letras, ou entre no código de um amigo. Adicione <strong>amigos</strong> pelo username para transferir AC e jogar junto. O <strong>ranking global</strong> mostra os top 20 por lucro — atualiza a cada 30 segundos.</p>
+        </section>
+
+        <section class="about-card">
+            <h2>🚀 Rodando o projeto</h2>
+            <p>O Arcadia é um projeto open-source de portfólio. Para rodar localmente:</p>
+            <ul>
+                <li>Instale as dependências: <code>cd server && npm install</code></li>
+                <li>Inicie: <code>npm run dev</code></li>
+                <li>Abra: <code>http://localhost:8899</code> (local) ou na URL do Render quando online — o servidor entrega tudo (API + jogo)</li>
+            </ul>
+        </section>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/wallet.js"></script>
+    <script>
+        // saldo no header + botão de som
+        (async () => {
+            if (ArcadiaAPI.isLoggedIn()) {
+                await ArcadiaWallet.refresh();
+                document.getElementById("walletBalance").textContent = ArcadiaWallet.format(ArcadiaWallet.getCached());
+            }
+        })();    </script>
+</body>
+</html>

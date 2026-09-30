@@ -1,0 +1,389 @@
+/* ================================
+   ARCADIA - GLOBAL STYLES
+   ================================ */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --background: #080b12;
+    --background-secondary: #0f1420;
+
+    --surface: #151b29;
+    --surface-hover: #1d2535;
+
+    --primary: #8b5cf6;
+    --primary-hover: #7c3aed;
+
+    --secondary: #22d3ee;
+
+    --text: #f8fafc;
+    --text-secondary: #94a3b8;
+
+    --border: #263043;
+
+    --success: #22c55e;
+    --danger: #ef4444;
+
+    --max-width: 1200px;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    background: var(--background);
+    color: var(--text);
+
+    font-family:
+        Inter,
+        Arial,
+        Helvetica,
+        sans-serif;
+
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button {
+    font: inherit;
+    cursor: pointer;
+}
+
+ul {
+    list-style: none;
+}
+
+.container {
+    width: min(90%, var(--max-width));
+    margin: 0 auto;
+}
+
+/* ================================
+   v0.9.1 — POLIMENTO VISUAL + RESPONSIVIDADE
+   ================================ */
+
+/* ---------- Botão de som ---------- */
+.sfx-toggle {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 1.05rem;
+    padding: .35rem .6rem;
+    cursor: pointer;
+    transition: transform .15s ease, border-color .15s ease;
+    line-height: 1;
+}
+.sfx-toggle:hover {
+    transform: scale(1.1);
+    border-color: var(--primary);
+}
+
+/* ---------- Scrollbar customizada ---------- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--background-secondary); }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--primary), #6d28d9);
+    border-radius: 999px;
+    border: 2px solid var(--background-secondary);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--primary); }
+
+/* ---------- Seleção de texto ---------- */
+::selection { background: rgba(139,92,246,.4); }
+
+/* ---------- Focus visível ---------- */
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ---------- Botões com elevação ---------- */
+.btn {
+    transition: transform .12s ease, box-shadow .15s ease, filter .15s ease;
+}
+.btn:hover { transform: translateY(-1px); }
+.btn:active { transform: translateY(1px) scale(.98); }
+.btn-primary {
+    box-shadow: 0 4px 14px rgba(139,92,246,.25);
+}
+.btn-primary:hover { box-shadow: 0 6px 20px rgba(139,92,246,.4); }
+
+/* ---------- Cards com brilho no hover ---------- */
+.game-card {
+    transition: transform .2s ease, box-shadow .25s ease, border-color .2s ease;
+}
+.game-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(139,92,246,.5);
+    box-shadow: 0 12px 32px rgba(0,0,0,.45), 0 0 24px rgba(139,92,246,.12);
+}
+
+/* ---------- Logo com glow ---------- */
+.logo {
+    text-shadow: 0 0 24px rgba(139,92,246,.35);
+}
+
+/* ---------- Inputs mais suaves ---------- */
+input, select {
+    transition: border-color .15s ease, box-shadow .15s ease;
+}
+input:focus, select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139,92,246,.15);
+}
+
+/* ---------- Animação de entrada ---------- */
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+main > *, .game-card, .profile-card, .room-card {
+    animation: fadeUp .4s ease both;
+}
+/* respeita quem prefere menos animação */
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: .01ms !important;
+        transition-duration: .01ms !important;
+    }
+}
+
+/* ---------- RESPONSIVIDADE MOBILE ---------- */
+@media (max-width: 768px) {
+    /* nav empilha */
+    .navbar {
+        flex-direction: column;
+        gap: .6rem;
+        padding: .8rem 0;
+    }
+    .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: .8rem !important;
+        font-size: .9rem;
+    }
+    .nav-actions {
+        width: 100%;
+        justify-content: center;
+        gap: .6rem;
+    }
+    .home-wallet { font-size: .9rem; }
+
+    /* tipografia menor */
+    h1 { font-size: 1.6rem !important; }
+    .hero-content h1, h2 { font-size: 1.3rem; }
+
+    /* containers com respiro menor */
+    .container { padding: 0 .9rem; }
+
+    /* grid de jogos em 1 coluna */
+    .games-grid, .game-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* mesas e painéis ocupam a largura */
+    .bj-table, .rl-table, .race-track-wrap, .duel-arena, .bjmp-arena {
+        padding: .9rem !important;
+        border-width: 5px !important;
+    }
+
+    /* cartas menores */
+    .card { width: 52px; height: 74px; font-size: 1.1rem; }
+    .bj-card { width: 38px; height: 54px; font-size: .85rem; }
+    .cards { min-height: 74px; }
+
+    /* roleta: números menores */
+    .rl-numbers { grid-template-columns: repeat(9, 1fr) !important; }
+    .rlm-nums { grid-template-columns: repeat(10, 1fr) !important; }
+
+    /* pot/actions empilham */
+    .pot-actions { flex-wrap: wrap; }
+    .pot-value { font-size: 1.9rem !important; }
+
+    /* duel fighters empilham */
+    .duel-fighters { grid-template-columns: 1fr !important; }
+    .duel-vs { text-align: center; }
+
+    /* corrida: nomes menores */
+    .lane-name { font-size: .72rem; }
+    .lane-horse { min-width: 110px; font-size: 1.4rem; }
+
+    /* perfil */
+    .wallets-row { flex-wrap: wrap; }
+    .wallet-box { flex: 1; min-width: 90px; }
+    .stats-row { gap: 1rem; }
+
+    /* modal da sala ocupa quase tudo */
+    .room-modal { width: 96vw !important; padding: 1rem !important; max-height: 90vh; }
+    .room-columns { grid-template-columns: 1fr !important; }
+
+    /* hero da home */
+    .hero-content h1 { font-size: 2rem !important; }
+}
+
+@media (max-width: 420px) {
+    .rl-numbers { grid-template-columns: repeat(6, 1fr) !important; }
+    .rl-outsides { grid-template-columns: repeat(3, 1fr) !important; }
+    .rl-outsides.dozens { grid-template-columns: 1fr !important; }
+    .nav-links { gap: .5rem !important; }
+    .avatar { width: 64px; height: 64px; font-size: 2rem; }
+}
+
+
+/* ================================
+   HEADER + BOTÕES + FOOTER (universal, v0.9.2)
+   ================================ */
+
+/* ================================
+   HEADER
+   ================================ */
+
+.header {
+    border-bottom: 1px solid var(--border);
+    background: rgba(8, 11, 18, 0.92);
+}
+
+.navbar {
+    min-height: 72px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 30px;
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 3px;
+}
+
+.logo span {
+    color: var(--primary);
+}
+
+.nav-links {
+    display: flex;
+    gap: 30px;
+
+    color: var(--text-secondary);
+}
+
+.nav-links a {
+    transition: color 0.2s ease;
+}
+
+.nav-links a:hover {
+    color: var(--text);
+}
+
+.nav-actions {
+    display: flex;
+    gap: 12px;
+}
+
+
+/* ================================
+   BUTTONS
+   ================================ */
+
+.btn {
+    border: none;
+    border-radius: 8px;
+
+    padding: 10px 18px;
+
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-hover);
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text);
+
+    border: 1px solid var(--border);
+}
+
+
+
+/* ================================
+   FOOTER
+   ================================ */
+
+.footer {
+    border-top: 1px solid var(--border);
+
+    margin-top: 60px;
+    padding: 35px 0;
+
+    color: var(--text-secondary);
+
+    font-size: 0.85rem;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    gap: 30px;
+}
+
+
+
+
+/* ---------- Tela "precisa logar" + estados vazios (v0.9.2) ---------- */
+.auth-required, .empty-state {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    max-width: 520px;
+    margin: 3rem auto;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    animation: fadeUp .4s ease both;
+}
+.auth-required-icon, .empty-icon {
+    font-size: 3.2rem;
+    margin-bottom: 1rem;
+    display: inline-block;
+    filter: drop-shadow(0 0 20px rgba(139,92,246,.4));
+}
+.auth-required h2, .empty-state h3 {
+    font-size: 1.4rem;
+    margin-bottom: .6rem;
+}
+.auth-required p, .empty-state p {
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+}
+.auth-required code, .empty-state code {
+    background: var(--bg);
+    padding: .1rem .4rem;
+    border-radius: 6px;
+    font-size: .85em;
+}
+.auth-required-actions { display: flex; gap: .8rem; justify-content: center; margin-bottom: .8rem; }

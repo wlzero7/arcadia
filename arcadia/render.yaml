@@ -1,0 +1,19 @@
+services:
+  # Arcadia — frontend + API + WebSocket em UM serviço (Express serve tudo)
+  - type: web
+    name: arcadia
+    runtime: node
+    plan: free
+    region: oregon
+    buildCommand: cd server && npm install
+    startCommand: cd server && node src/server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
+    # Nota: no plano FREE o disco é efêmero — o banco zera a cada redeploy/restart.
+    # Para persistir contas/saldos, adicione um Disk (plano pago) com DB_PATH=/var/data/arcadia.db.
