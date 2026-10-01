@@ -56,7 +56,7 @@ router.post("/register", async (req, res) => {
 
         const userId = result.lastInsertRowid;
 
-        await pool.run(`INSERT INTO wallets (user_id, balance) VALUES (?, ?)`, [userId, 10000]);
+        await pool.run(`INSERT INTO wallets (user_id, balance) VALUES (?, ?)`, [userId, 1000000]);
 
         const token = jwt.sign(
             { id: userId, username: normalizedUsername },
@@ -69,7 +69,7 @@ router.post("/register", async (req, res) => {
             message: "Conta criada com sucesso.",
             token,
             user: { id: userId, username: normalizedUsername, email: normalizedEmail },
-            wallet: { balance: 10000 },
+            wallet: { balance: 1000000 },
         });
     } catch (error) {
         console.error("Register error:", error.message);
