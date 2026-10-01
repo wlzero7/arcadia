@@ -17,6 +17,7 @@
     const history = $("crashHistory");
 
     let playing = false;
+    let roundOver = true; // trava de rodada: evita corrida entre polling e cashout
     let pollTimer = null;
     let animTimer = null;
 
@@ -57,9 +58,14 @@
 
     // ---------- LOOP ----------
     function startPolling() {
+        clearInterval(pollTimer); // segurança: nunca dois pollings rodando
         pollTimer = setInterval(async () => {
+            if (roundOver) return;
             try {
                 const data = await ArcadiaAPI.request("/api/games/crash/state");
+
+                // resposta tardia chegando depois do cashout — ignora
+                if (roundOver) return;
 
                 if (!data.active) {
                     if (data.crashed) {
@@ -90,6 +96,7 @@
     }
 
     function crash(point, balance) {
+        roundOver = true;
         clearInterval(pollTimer);
         clearInterval(animTimer);
         playing = false;
@@ -105,6 +112,8 @@
     }
 
     function endRoundUI() {
+        roundOver = true;
+        cashoutBtn.disabled = false; // FIX: reabilita o botão para a próxima rodada
         cashoutBtn.classList.add("hidden");
         startBtn.classList.remove("hidden");
         setTimeout(() => {
@@ -119,6 +128,7 @@
 
     function endRound(text, cls) {
         playing = false;
+        roundOver = true;
         clearInterval(pollTimer);
         clearInterval(animTimer);
         setMessage(text, cls);
@@ -142,8 +152,10 @@
 
             Sfx.rocket();
             playing = true;
+            roundOver = false;
             stage.classList.remove("crashed", "won");
             startBtn.classList.add("hidden");
+            cashoutBtn.disabled = false; // FIX: garante botão ativo a cada rodada
             cashoutBtn.classList.remove("hidden");
             setMessage("Subindo... saque antes do crash!", "");
             updateWallet(data.balance);
@@ -157,9 +169,12 @@
 
     // ---------- CASHOUT ----------
     cashoutBtn.addEventListener("click", async () => {
+        if (roundOver) return;
+        roundOver = true; // trava já: segundo clique é ignorado
+        clearInterval(pollTimer);
+
         try {
             cashoutBtn.disabled = true;
-            clearInterval(pollTimer);
 
             const data = await ArcadiaAPI.request("/api/games/crash/cashout", { method: "POST" });
 
@@ -180,6 +195,10 @@
             }
             endRoundUI();
         } catch (err) {
+            // FIX: a rodada pode ainda estar viva no servidor — destrava e volta a acompanhar
+            roundOver = false;
+            cashoutBtn.disabled = false;
+            startPolling();
             setMessage(err.message, "loss");
         }
     });
