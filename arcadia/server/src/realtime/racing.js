@@ -114,7 +114,7 @@ function setupRacing(io) {
 
                 const wallet = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'coop'", [socket.userId])
                     || (() => {
-                        pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'coop', 10000)", [socket.userId]);
+                        pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'coop', 1000000)", [socket.userId]);
                         return pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'coop'", [socket.userId]);
                     })();
 
