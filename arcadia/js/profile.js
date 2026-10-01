@@ -1,43 +1,34 @@
 // ========================================
-// ARCADIA - PERFIL v0.9 — level, avatar, carteiras, conquistas, missões
+// ARCADIA - PERFIL v0.9.5 — level, avatar, carteiras, conquistas, missões
+// Amigos v0.9.5: favoritos + convites para duelo/coop em tempo real
 // ========================================
-
 (() => {
-
     const $ = (id) => document.getElementById(id);
-
     const AVATARS = ["🎰", "🎲", "🃏", "💣", "🚀", "🎡", "🐎", "👑", "🦊", "🐺", "🦁", "🐸", "🦅", "🐉", "🤖", "👽"];
     const KIND_LABEL = {
         bet: "Aposta", payout: "Prêmio", daily_bonus: "Bônus diário",
         room_stake: "Depósito em sala", room_payout: "Saque de sala", room_refund: "Reembolso",
         transfer_in: "Transferência recebida", transfer_out: "Transferência enviada",
     };
-
     function fmt(v) { return (Number(v) || 0).toLocaleString("pt-BR") + " AC"; }
-
     // ---------- SESSÃO / LEVEL ----------
     async function loadMe() {
         const data = await ArcadiaAPI.request("/api/auth/me");
         const u = data.user;
-
         $("profileAvatar").textContent = u.avatar;
         $("profileName").textContent = u.displayName;
         $("profileUsername").textContent = "@" + u.username;
         $("profileLevel").textContent = "Lv " + u.level;
-
         const xpNext = Math.floor(100 * Math.pow(u.level, 1.5));
         const pct = Math.min(100, Math.round((u.xp / xpNext) * 100));
         $("xpBar").style.width = pct + "%";
         $("xpText").textContent = `${u.xp} / ${xpNext} XP`;
-
         $("walletSolo").textContent = ArcadiaWallet.format(data.wallets.solo || 0);
         $("walletCoop").textContent = ArcadiaWallet.format(data.wallets.coop || 0);
         $("walletDuel").textContent = ArcadiaWallet.format(data.wallets.duel || 0);
         $("walletBalance").textContent = ArcadiaWallet.format(data.wallets.solo || 0);
-
         return u;
     }
-
     // ---------- EDITAR AVATAR ----------
     function renderAvatarPicker() {
         const picker = $("avatarPicker");
@@ -54,7 +45,6 @@
         });
         $("editAvatarBtn").addEventListener("click", () => picker.classList.toggle("hidden"));
     }
-
     // ---------- CONQUISTAS ----------
     async function loadAchievements() {
         const data = await ArcadiaAPI.request("/api/progression/achievements");
@@ -67,7 +57,6 @@
             list.appendChild(div);
         });
     }
-
     // ---------- MISSÕES ----------
     async function loadMissions() {
         const data = await ArcadiaAPI.request("/api/progression/missions");
@@ -75,7 +64,6 @@
         const weekly = $("missionsWeekly");
         daily.innerHTML = "";
         weekly.innerHTML = "";
-
         data.missions.forEach((m) => {
             const div = document.createElement("div");
             div.className = "mission" + (m.completed ? " done" : "");
@@ -99,26 +87,21 @@
             (m.period === "weekly" ? weekly : daily).appendChild(div);
         });
     }
-
     // ---------- ESTATÍSTICAS COMPLETAS (v0.9.3) ----------
     const GAME_ICON = {
         dice: "🎲", coinflip: "🪙", mines: "💣", crash: "🚀",
         blackjack: "🃏", roulette: "🎡", racing: "🐎",
     };
-
     function fmt(v) { return (Number(v) || 0).toLocaleString("pt-BR") + " AC"; }
     function signed(v) { const n = Number(v) || 0; return (n >= 0 ? "+" : "") + fmt(n); }
-
     async function loadFullStats() {
         try {
             const data = await ArcadiaAPI.request("/api/games/stats/full");
             const s = data.stats;
-
             // herói
             const netEl = $("stNetBig");
             netEl.textContent = signed(s.net);
             netEl.className = "stat-big " + (s.net >= 0 ? "pos" : "neg");
-
             // grid
             $("stCoins").textContent = fmt((s.wallets.solo || 0) + (s.wallets.coop || 0) + (s.wallets.duel || 0));
             $("stWinsBig").textContent = s.wins;
@@ -132,7 +115,6 @@
             $("stAch").textContent = s.achievementsUnlocked;
             $("stDuelWins").textContent = s.duel.wins;
             $("stMpWins").textContent = s.multiplayer.rouletteWins;
-
             // por jogo com barras
             const bg = $("statsByGame");
             bg.innerHTML = "";
@@ -156,7 +138,6 @@
             console.warn("stats:", err.message);
         }
     }
-
     // ---------- STATS + EXTRATO ----------
     async function loadStats() {
         const data = await ArcadiaAPI.request("/api/games/stats");
@@ -166,7 +147,6 @@
         $("stNet").textContent = (net >= 0 ? "+" : "") + fmt(net);
         $("stNet").style.color = net >= 0 ? "var(--success)" : "var(--danger)";
     }
-
     async function loadTx() {
         const data = await ArcadiaAPI.request("/api/wallet/transactions");
         const list = $("txList");
@@ -183,8 +163,7 @@
             list.appendChild(div);
         });
     }
-
-    // ---------- AMIGOS ----------
+    // ---------- AMIGOS (v0.9.5: favoritos + convites) ----------
     async function loadFriends() {
         const data = await ArcadiaAPI.request("/api/friends");
         const reqBox = $("friendRequests");
@@ -211,9 +190,62 @@
             list.innerHTML = '<li class="muted">Nenhum amigo ainda.</li>';
             return;
         }
-        data.friends.forEach((f) => {
+
+        // favoritos primeiro, depois alfabético
+        const sorted = data.friends.slice()
+            .sort((a, b) => (b.favorite - a.favorite) || a.username.localeCompare(b.username));
+
+        sorted.forEach((f) => {
             const li = document.createElement("li");
-            li.innerHTML = `<span>👤 ${f.username}</span>`;
+            li.style.display = "flex";
+            li.style.alignItems = "center";
+            li.style.gap = ".4rem";
+            li.style.flexWrap = "wrap";
+
+            const name = document.createElement("span");
+            name.textContent = (f.favorite ? "⭐ " : "") + "👤 " + f.username;
+            name.style.flex = "1";
+            name.style.cursor = "pointer";
+            name.title = "Ver perfil público";
+            name.addEventListener("click", () => {
+                window.location.href = "perfil-publico.html?u=" + encodeURIComponent(f.username);
+            });
+            li.appendChild(name);
+
+            const favBtn = document.createElement("button");
+            favBtn.className = "remove-btn";
+            favBtn.textContent = "⭐";
+            favBtn.title = f.favorite ? "Remover dos favoritos" : "Favoritar";
+            favBtn.addEventListener("click", async () => {
+                await ArcadiaAPI.request("/api/friends/favorite", { method: "POST", body: JSON.stringify({ friendId: f.id }) });
+                loadFriends();
+            });
+            li.appendChild(favBtn);
+
+            const duelBtn = document.createElement("button");
+            duelBtn.className = "remove-btn";
+            duelBtn.textContent = "⚔️";
+            duelBtn.title = "Convidar para duelo x1";
+            duelBtn.addEventListener("click", async () => {
+                try {
+                    const inv = await ArcadiaAPI.request("/api/friends/invite", { method: "POST", body: JSON.stringify({ username: f.username, kind: "duel" }) });
+                    alert(`Convite de DUELO enviado! Código: ${inv.code}`);
+                } catch (err) { alert(err.message); }
+            });
+            li.appendChild(duelBtn);
+
+            const coopBtn = document.createElement("button");
+            coopBtn.className = "remove-btn";
+            coopBtn.textContent = "🤝";
+            coopBtn.title = "Convidar para sala coop";
+            coopBtn.addEventListener("click", async () => {
+                try {
+                    const inv = await ArcadiaAPI.request("/api/friends/invite", { method: "POST", body: JSON.stringify({ username: f.username, kind: "coop" }) });
+                    alert(`Convite de SALA enviado! Código: ${inv.code}`);
+                } catch (err) { alert(err.message); }
+            });
+            li.appendChild(coopBtn);
+
             const btn = document.createElement("button");
             btn.className = "remove-btn";
             btn.textContent = "remover";
@@ -222,10 +254,10 @@
                 loadFriends();
             });
             li.appendChild(btn);
+
             list.appendChild(li);
         });
     }
-
     $("addFriendBtn").addEventListener("click", async () => {
         try {
             await ArcadiaAPI.request("/api/friends/request", { method: "POST", body: JSON.stringify({ username: $("friendUsername").value }) });
@@ -233,12 +265,30 @@
             loadFriends();
         } catch (err) { alert(err.message); }
     });
-
+    // ---------- CONVITES EM TEMPO REAL (Socket.IO) ----------
+    (function setupInvites() {
+        const s = document.createElement("script");
+        s.src = "https://cdn.socket.io/4.7.5/socket.io.min.js";
+        s.onload = () => {
+            const socket = io(window.API_URL, {
+                auth: { token: ArcadiaAPI.getToken() },
+                transports: ["websocket", "polling"],
+            });
+            socket.on("friend:invite", (inv) => {
+                const kind = inv.kind === "duel" ? "Duelo x1" : "Sala coop";
+                if (confirm(`🎮 ${inv.from} convidou você para ${kind}!\nCódigo: ${inv.code}\n\nAceitar agora?`)) {
+                    try { navigator.clipboard.writeText(inv.code); } catch (_) {}
+                    const page = inv.kind === "duel" ? "duel.html" : "rooms.html";
+                    window.location.href = page + "?code=" + encodeURIComponent(inv.code);
+                }
+            });
+        };
+        document.head.appendChild(s);
+    })();
     $("logoutBtn").addEventListener("click", () => {
         ArcadiaAPI.logout();
         window.location.href = "index.html";
     });
-
     // ---------- GATE: precisa estar logado ----------
     function renderLoginGate() {
         document.querySelector(".profile-main").innerHTML = `
@@ -253,7 +303,6 @@
             </div>
         `;
     }
-
     // ---------- INIT ----------
     (async function init() {
         if (!ArcadiaAPI.isLoggedIn()) {
