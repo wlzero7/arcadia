@@ -171,6 +171,13 @@ db.exec(`
         SELECT id, 'duel', 1000000 FROM users;
 `);
 
+// Contas criadas com o saldo antigo (10k/1k) sobem para 1M no boot
+db.exec(`
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'solo' AND balance = 10000;
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'coop' AND balance = 10000;
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'duel' AND balance = 1000;
+`);
+
 // ========================================
 // HELPERS (mesma assinatura do pg: err-first)
 // ========================================
