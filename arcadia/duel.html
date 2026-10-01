@@ -1,47 +1,63 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Duelo x1 — Arcadia">
     <title>Duelo x1 — Arcadia</title>
     <link rel="stylesheet" href="css/global.css">
     <link rel="stylesheet" href="css/duel.css">
 </head>
+
 <body>
+
     <header class="header">
         <nav class="navbar container">
-            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <a href="index.html" class="logo">ARC<span>ADIA</span></a>
             <ul class="nav-links">
                 <li><a href="index.html">Início</a></li>
-                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="games.html">Jogos</a></li>
                 <li><a href="rooms.html">Salas</a></li>
                 <li><a href="ranking.html">Ranking</a></li>
                 <li><a href="perfil.html">Perfil</a></li>
                 <li><a href="sobre.html">Sobre</a></li>
             </ul>
+            <div class="home-wallet">
+                <span>Carteira Duelo</span>
+                <strong id="walletBalance">—</strong>
+            </div>
             <div class="nav-actions">
                 <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
-                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
             </div>
         </nav>
     </header>
 
-    <main class="container duel-main">
-        <h1>⚔️ <span class="accent">Duelo de Apostas</span></h1>
-        <p class="muted">Você contra seu amigo, carteira DUEL separada (1.000 AC). O primeiro que <strong>falir</strong>, perde!</p>
+    <main class="container">
+
+        <div class="page-head">
+            <h1>⚔️ Duelo x1</h1>
+            <p class="muted">Desafie um amigo. Primeiro a falir, perde. Carteira DUEL separada.</p>
+        </div>
 
         <div class="duel-lobby" id="duelLobby">
-            <button class="btn btn-primary" id="createDuelBtn">⚔️ Criar duelo</button>
-            <div class="duel-join">
-                <input type="text" id="joinCode" placeholder="CÓDIGO" maxlength="5">
-                <button class="btn btn-outline" id="joinDuelBtn">Entrar</button>
+            <div class="lobby-actions">
+                <button class="btn btn-primary" id="createDuelBtn">⚔️ Criar duelo</button>
+                <div class="join-row">
+                    <input type="text" id="joinCode" placeholder="CÓDIGO" maxlength="5">
+                    <button class="btn btn-outline" id="joinDuelBtn">Entrar</button>
+                </div>
             </div>
         </div>
 
         <section class="duel-arena hidden" id="duelArena">
             <div class="duel-header">
                 <span>Código: <strong class="accent" id="duelCode">—</strong></span>
-                <button class="btn btn-primary hidden" id="readyBtn">Pronto!</button>
+                <span class="muted" id="readyStatus"></span>
+                <div>
+                    <button class="btn btn-outline hidden" id="readyBtn">✅ Pronto</button>
+                    <button class="btn btn-primary hidden" id="startBtn">▶️ Iniciar partida</button>
+                </div>
             </div>
 
             <div class="duel-fighters">
@@ -56,40 +72,43 @@
                 </div>
             </div>
 
-            <div class="duel-turn" id="duelTurn">—</div>
+            <div class="duel-turn" id="duelTurn">Aguardando oponente entrar...</div>
 
-            <div class="duel-auction hidden" id="auctionPanel">
-                <h3>🔨 Leilão de modos</h3>
-                <p class="muted">5 modos sorteados. Dê lances (carteira DUEL) — quem der o maior lance num modo pode escolhê-lo. O lance vencedor é descontado!</p>
-                <div id="auctionSlots" class="auction-slots"></div>
-                <div class="auction-bid-row">
-                    <input type="number" id="bidAmount" value="100" min="10">
-                    <button class="btn btn-primary" id="bidBtn">Dar lance</button>
-                    <button class="btn btn-outline hidden" id="chooseBtn">Escolher selecionado</button>
-                </div>
-                <div class="game-result" id="auctionMsg"></div>
-            </div>
+            <section class="panel hidden" id="auctionPanel">
+                <h2>🔨 Leilão de modos</h2>
+                <p class="muted">Dê um lance (da carteira DUEL) no modo que você quer jogar. O maior lance escolhe!</p>
+                <div id="auctionSlots"></div>
+            </section>
 
-            <div class="duel-play hidden" id="duelPlay">
-                <div class="duel-game-pick">
-                    <button data-game="dice" class="active">🎲 Dados (5x)</button>
-                    <button data-game="coinflip">🪙 Cara/Coroa (2x)</button>
-                    <button data-game="crash">🚀 Crash (até 10x)</button>
+            <section class="panel hidden" id="duelPlay">
+                <div class="play-row">
+                    <select id="gameSelect">
+                        <option value="dice">🎲 Dados</option>
+                        <option value="coinflip">🪙 Cara ou coroa</option>
+                        <option value="crash">🚀 Crash</option>
+                        <option value="mines">💣 Mines</option>
+                        <option value="roulette">🎡 Roleta</option>
+                    </select>
+                    <input type="number" id="wager" placeholder="Aposta (min 10)" min="10">
+                    <input type="number" id="crashTarget" class="hidden" placeholder="Auto-cashout (ex: 2)" step="0.1" min="1.1">
+                    <button class="btn btn-primary" id="playBtn">Jogar</button>
                 </div>
-                <div class="bet-row">
-                    <input type="number" id="wager" value="100" min="10">
-                    <button class="btn btn-primary" id="playBtn">Jogar rodada</button>
-                </div>
-                <div class="crash-target hidden" id="crashTarget">
-                    <label>Auto-cashout: <input type="number" id="target" value="2" step="0.1" min="1.1" max="10"> x</label>
-                </div>
-            </div>
+                <div class="number-pick hidden" id="dicePick"></div>
+            </section>
 
-            <div class="duel-log" id="duelLog"></div>
-
-            <div class="duel-result hidden" id="duelResult"></div>
+            <section class="panel">
+                <h3>📜 Log da batalha</h3>
+                <div id="duelLog"></div>
+            </section>
         </section>
+
     </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <p>Arcadia é um projeto educacional. ArcCoins não possuem valor monetário real.</p>
+        </div>
+    </footer>
 
     <script src="js/sfx.js"></script>
     <script src="js/api.js"></script>
@@ -97,4 +116,5 @@
     <script src="js/wallet.js"></script>
     <script src="js/duel.js"></script>
 </body>
+
 </html>
