@@ -65,7 +65,7 @@ function setupDuels(io) {
             // carteira duel
             let w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
             if (!w) {
-                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000)", [socket.userId]);
+                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)", [socket.userId]);
                 w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
             }
 
@@ -103,7 +103,7 @@ function setupDuels(io) {
 
             let w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
             if (!w) {
-                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000)", [socket.userId]);
+                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)", [socket.userId]);
                 w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
             }
 

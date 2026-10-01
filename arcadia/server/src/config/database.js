@@ -161,12 +161,14 @@ if (!walletCols.includes("kind")) {
     `);
 }
 
-// Garante carteiras solo/duel para todos os usuários
+// Garante carteiras solo/coop/duel para todos os usuários — 1.000.000 AC (config do William)
 db.exec(`
     INSERT OR IGNORE INTO wallets (user_id, kind, balance)
-        SELECT id, 'solo', 10000 FROM users;
+        SELECT id, 'solo', 1000000 FROM users;
     INSERT OR IGNORE INTO wallets (user_id, kind, balance)
-        SELECT id, 'duel', 1000 FROM users;
+        SELECT id, 'coop', 1000000 FROM users;
+    INSERT OR IGNORE INTO wallets (user_id, kind, balance)
+        SELECT id, 'duel', 1000000 FROM users;
 `);
 
 // ========================================
@@ -250,12 +252,12 @@ function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
     });
 }
 
-// Carteira por tipo (solo | coop | duel) — cria se não existir
+// Carteira por tipo (solo | coop | duel) — cria se não existir — 1.000.000 AC (config do William)
 function getWallet(userId, kind = "solo") {
     return transaction(() => {
         let w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
         if (!w) {
-            const initial = kind === "duel" ? 1000 : 10000;
+            const initial = 1000000;
             db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, ?, ?)", [userId, kind, initial]);
             w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
         }
