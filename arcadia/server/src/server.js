@@ -22,6 +22,7 @@ const { setupMultiplayer } = require("./realtime/rooms");
 const { setupBlackjackMultiplayer } = require("./realtime/blackjack-mp");
 const { setupRacing } = require("./realtime/racing");
 const { setupDuels } = require("./realtime/duels");
+const { initInvites } = require("./realtime/invites");
 const progression = require("./services/progression.routes");
 
 const app = express();
@@ -130,6 +131,7 @@ setupMultiplayer(io);
 setupBlackjackMultiplayer(io);
 setupRacing(io);
 setupDuels(io);
+initInvites(io);
 
 // ========================================
 // START
