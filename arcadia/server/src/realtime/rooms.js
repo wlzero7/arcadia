@@ -638,4 +638,4 @@ function setupMultiplayer(io) {
     return { rooms, MULTI_GAMES };
 }
 
-module.exports = { setupMultiplayer };
+module.exports = { setupMultiplayer, rooms, persistRoomCreate, persistRoomMember };
