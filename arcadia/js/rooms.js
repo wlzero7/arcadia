@@ -315,6 +315,7 @@ const Rooms = (() => {
 
     function openRoom(room) {
         currentRoom = room;
+        sessionStorage.setItem("arcadia_room", room.code);
         renderRoom(room);
         $("chatLog").innerHTML = "";
         roomModal.classList.add("active");
@@ -323,6 +324,7 @@ const Rooms = (() => {
 
     $("leaveRoomBtn").addEventListener("click", () => {
         socket.emit("room:leave");
+        sessionStorage.removeItem("arcadia_room");
         roomModal.classList.remove("active");
         refreshRoomsList();
     });
@@ -391,6 +393,18 @@ const Rooms = (() => {
             $("walletBalance").textContent = ArcadiaWallet.format(ArcadiaWallet.getCached());
             await connect();
             refreshRoomsList();
+            // Reconexão automática: F5 não expulsa mais da partida
+            const savedRoom = sessionStorage.getItem("arcadia_room");
+            if (savedRoom) {
+                socket.emit("room:join", { code: savedRoom }, (rj) => {
+                    if (rj.ok) {
+                        openRoom(rj.room);
+                        toastMsg("Reconectado à sala ✓");
+                    } else {
+                        sessionStorage.removeItem("arcadia_room");
+                    }
+                });
+            }
         }
         document.addEventListener("arcadia:balance", (e) => {
             $("walletBalance").textContent = ArcadiaWallet.format(e.detail.balance);
