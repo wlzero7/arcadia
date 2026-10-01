@@ -78,7 +78,7 @@ router.post("/register", async (req, res) => {
 });
 
 // ========================================
-// LOGIN
+// LOGIN (aceita e-mail OU username)
 // ========================================
 
 router.post("/login", async (req, res) => {
@@ -88,14 +88,17 @@ router.post("/login", async (req, res) => {
         return res.status(400).json({ status: "error", message: "Preencha e-mail e senha." });
     }
 
+    const login = String(email).trim();
+    const isEmail = login.includes("@");
+
     try {
         const user = await pool.get(
             `SELECT u.id, u.username, u.email, u.password_hash, w.balance
              FROM users AS u
              INNER JOIN wallets AS w ON w.user_id = u.id
-             WHERE LOWER(u.email) = LOWER(?)
+             WHERE LOWER(${isEmail ? "u.email" : "u.username"}) = LOWER(?)
              LIMIT 1`,
-            [String(email).trim().toLowerCase()]
+            [isEmail ? login.toLowerCase() : login]
         );
 
         if (!user) {
