@@ -27,7 +27,8 @@ let isRolling = false;
 // ========================================
 
 const balanceElement =
-    document.getElementById("balance");
+    document.getElementById("balance") ||
+    document.getElementById("walletBalance");
 
 const diceElement =
     document.getElementById("dice");
@@ -156,11 +157,12 @@ function validateBet(bet) {
 
     }
 
-if (!Number.isInteger(bet)) {
+    if (!Number.isInteger(bet)) {
 
-    return "A aposta deve utilizar ArcCoins inteiros.";
+        return "A aposta deve utilizar ArcCoins inteiros.";
 
-}
+    }
+
     if (bet < 10) {
 
         return "A aposta mínima é 10 AC.";
@@ -256,8 +258,16 @@ async function playDice() {
 
 function updateBalance() {
 
-    balanceElement.textContent =
-        formatArcCoins(balance);
+    // nunca quebra se o elemento não existir na página
+    if (balanceElement) {
+        balanceElement.textContent = formatArcCoins(balance);
+    }
+
+    // mantém o saldo do header sincronizado também
+    const headerWallet = document.getElementById("walletBalance");
+    if (headerWallet) {
+        headerWallet.textContent = formatArcCoins(balance);
+    }
 
 }
 
@@ -438,4 +448,12 @@ rollButton.addEventListener(
 // INITIALIZE
 // ========================================
 
-updateInterface();
+(async function init() {
+    if (ArcadiaAPI.isLoggedIn()) {
+        try {
+            await ArcadiaWallet.refresh();
+            balance = ArcadiaWallet.getCached();
+        } catch (_) {}
+    }
+    updateInterface();
+})();
