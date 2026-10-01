@@ -106,7 +106,6 @@ function setupDuels(io) {
                 pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)", [socket.userId]);
                 w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
             }
-
             d.players.p2 = { userId: socket.userId, username: socket.username, balance: w.balance, ready: false, socketIds: new Set([socket.id]) };
             d.phase = "ready";
             socket.data.duelCode = d.code;
@@ -119,7 +118,6 @@ function setupDuels(io) {
         socket.on("duel:ready", (_, cb) => {
             const d = duels.get(socket.data.duelCode);
             if (!d) return cb && cb({ ok: false, error: "Duelo não encontrado." });
-
             const key = d.players.p1.userId === socket.userId ? "p1" : "p2";
             const me = d.players[key];
 
@@ -173,7 +171,6 @@ function setupDuels(io) {
 
             slot.bids[myKey] = amount;
             d.log.push({ system: true, message: `🔨 ${me.username} deu lance de ${amount} AC no modo ${slot.game}!`, at: Date.now() });
-
             io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
             cb && cb({ ok: true, duel: duelState(d) });
         });
@@ -197,7 +194,6 @@ function setupDuels(io) {
             if (!wonSlots.length) {
                 return cb && cb({ ok: false, error: "Você não venceu nenhum lance. Dê um lance primeiro!" });
             }
-
             const gameIdx = Number(data && data.gameIdx);
             if (!wonSlots.includes(gameIdx)) {
                 return cb && cb({ ok: false, error: "Você só pode escolher um modo que venceu no leilão." });
@@ -205,7 +201,6 @@ function setupDuels(io) {
 
             const slot = d.auction[gameIdx];
             const bidAmount = slot.bids[myKey];
-
             // o lance vencedor é DESCONTADO da carteira DUEL (aposta pra escolher)
             if (me.balance < (Number(slot.bids[myKey]) || 0)) {
                 return cb && cb({ ok: false, error: "Saldo insuficiente para pagar o lance." });
@@ -217,7 +212,6 @@ function setupDuels(io) {
             d.turn = "p1";
 
             d.log.push({ system: true, message: `⚔️ ${me.username} pagou ${slot.bids[myKey]} AC e escolheu ${slot.game.toUpperCase()}! Duelo iniciado — falir = perder.`, at: Date.now() });
-
             io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
             cb && cb({ ok: true, duel: duelState(d) });
         });
@@ -338,4 +332,4 @@ function setupDuels(io) {
     return { duels };
 }
 
-module.exports = { setupDuels };
+module.exports = { setupDuels, duels };
