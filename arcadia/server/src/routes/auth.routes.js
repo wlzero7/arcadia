@@ -56,7 +56,7 @@ router.post("/register", async (req, res) => {
 
         const userId = result.lastInsertRowid;
 
-        await pool.run(`INSERT INTO wallets (user_id, balance) VALUES (?, ?)`, [userId, 1000000]);
+        await pool.run(`INSERT INTO wallets (user_id, balance) VALUES (?, ?)`, [userId, 10000]);
 
         const token = jwt.sign(
             { id: userId, username: normalizedUsername },
@@ -69,7 +69,7 @@ router.post("/register", async (req, res) => {
             message: "Conta criada com sucesso.",
             token,
             user: { id: userId, username: normalizedUsername, email: normalizedEmail },
-            wallet: { balance: 1000000 },
+            wallet: { balance: 10000 },
         });
     } catch (error) {
         console.error("Register error:", error.message);
@@ -78,7 +78,7 @@ router.post("/register", async (req, res) => {
 });
 
 // ========================================
-// LOGIN (aceita e-mail OU username)
+// LOGIN
 // ========================================
 
 router.post("/login", async (req, res) => {
@@ -88,17 +88,14 @@ router.post("/login", async (req, res) => {
         return res.status(400).json({ status: "error", message: "Preencha e-mail e senha." });
     }
 
-    const login = String(email).trim();
-    const isEmail = login.includes("@");
-
     try {
         const user = await pool.get(
             `SELECT u.id, u.username, u.email, u.password_hash, w.balance
              FROM users AS u
              INNER JOIN wallets AS w ON w.user_id = u.id
-             WHERE LOWER(${isEmail ? "u.email" : "u.username"}) = LOWER(?)
+             WHERE LOWER(u.email) = LOWER(?)
              LIMIT 1`,
-            [isEmail ? login.toLowerCase() : login]
+            [String(email).trim().toLowerCase()]
         );
 
         if (!user) {
@@ -193,6 +190,77 @@ router.patch("/profile", authenticate, async (req, res) => {
         });
     } catch (error) {
         return res.status(500).json({ status: "error", message: "Erro ao atualizar perfil." });
+    }
+});
+
+// ========================================
+// PATCH /api/auth/password — trocar senha (v0.9.6)
+// ========================================
+
+router.patch("/password", authenticate, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ status: "error", message: "Preencha a senha atual e a nova." });
+        }
+        if (String(newPassword).length < 8) {
+            return res.status(400).json({ status: "error", message: "A nova senha deve ter pelo menos 8 caracteres." });
+        }
+
+        const user = await pool.get(`SELECT id, password_hash FROM users WHERE id = ?`, [req.user.id]);
+        if (!user) {
+            return res.status(404).json({ status: "error", message: "Usuário não encontrado." });
+        }
+
+        const ok = await bcrypt.compare(String(currentPassword), user.password_hash);
+        if (!ok) {
+            return res.status(401).json({ status: "error", message: "Senha atual incorreta." });
+        }
+
+        const hash = await bcrypt.hash(String(newPassword), 10);
+        await pool.run(`UPDATE users SET password_hash = ? WHERE id = ?`, [hash, user.id]);
+
+        return res.json({ status: "success", message: "Senha alterada com sucesso!" });
+    } catch (error) {
+        console.error("Change password error:", error.message);
+        return res.status(500).json({ status: "error", message: "Não foi possível alterar a senha." });
+    }
+});
+
+// ========================================
+// DELETE /api/auth/account — deletar conta (v0.9.6)
+// Exige a senha. friend_favorites e rooms(host) não têm cascade —
+// limpa manualmente; todo o resto cai por ON DELETE CASCADE a partir de users.
+// ========================================
+
+router.delete("/account", authenticate, async (req, res) => {
+    try {
+        const user = await pool.get(`SELECT id, password_hash FROM users WHERE id = ?`, [req.user.id]);
+        if (!user) {
+            return res.status(404).json({ status: "error", message: "Usuário não encontrado." });
+        }
+
+        const ok = await bcrypt.compare(String(req.body.password || ""), user.password_hash);
+        if (!ok) {
+            return res.status(401).json({ status: "error", message: "Senha incorreta. A conta não foi deletada." });
+        }
+
+        // favoritos não têm FK cascade — limpa nas duas direções
+        await pool.run(`DELETE FROM friend_favorites WHERE user_id = ? OR friend_id = ?`, [user.id, user.id]);
+
+        // salas onde é host: host_id não tem cascade — apaga as salas
+        // (room_members e room_pot caem por cascade a partir de rooms)
+        await pool.run(`DELETE FROM rooms WHERE host_id = ?`, [user.id]);
+
+        // cascade: wallets(+transactions), bets, friendships, daily_bonus,
+        // user_achievements, user_missions, duel_stats, room_members
+        await pool.run(`DELETE FROM users WHERE id = ?`, [user.id]);
+
+        return res.json({ status: "success", message: "Conta deletada permanentemente." });
+    } catch (error) {
+        console.error("Delete account error:", error.message);
+        return res.status(500).json({ status: "error", message: "Não foi possível deletar a conta." });
     }
 });
 
