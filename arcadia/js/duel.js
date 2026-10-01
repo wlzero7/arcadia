@@ -48,9 +48,8 @@
         $("p1Box").classList.toggle("my-turn", d.turn === "p1" && d.phase === "playing");
         $("p2Box").classList.toggle("my-turn", d.turn === "p2" && d.phase === "playing");
 
-        // botão pronto
-        const iAmReady = d[myKey] && d[myKey].ready;
-        $("readyBtn").classList.toggle("hidden", !(d.phase === "ready" && !iAmReady(d, myKey)));
+        // botões Pronto / Iniciar + status
+        updateDuelButtons(d, myKey);
 
         // LEILÃO
         const auctionPanel = $("auctionPanel");
@@ -82,6 +81,31 @@
 
     function iAmReady(d, myKey) {
         return d[myKey] && d[myKey].ready;
+    }
+
+    // ---------- PRONTO / INICIAR ----------
+    function updateDuelButtons(d, myKey) {
+        const readyBtn = $("readyBtn");
+        const startBtn = $("startBtn");
+        const me = ArcadiaAPI.getUser();
+        const isHost = me && d.p1.userId === me.id;
+        const amReady = iAmReady(d, myKey);
+
+        // PRONTO: visível quando ainda não estou pronto (waiting ou ready)
+        const showReady = (d.phase === "waiting" || d.phase === "ready") && !amReady;
+        readyBtn.classList.toggle("hidden", !showReady);
+
+        // INICIAR: só o host, com os 2 prontos, fase ready
+        const showStart = isHost && d.phase === "ready" && d.p2 && d.p1.ready && d.p2.ready;
+        if (startBtn) startBtn.classList.toggle("hidden", !showStart);
+
+        // status de quem está pronto
+        const st = $("readyStatus");
+        if (st) {
+            const p1r = d.p1.ready ? "✓" : "…";
+            const p2r = d.p2 && d.p2.ready ? "✓" : "…";
+            st.textContent = `Prontos: P1 ${p1r} · P2 ${p2r}`;
+        }
     }
 
     // ---------- LEILÃO ----------
@@ -181,6 +205,11 @@
     });
 
     $("readyBtn").addEventListener("click", () => {
+        socket.emit("duel:ready", {}, (r) => { if (!r.ok) alert(r.error); });
+    });
+
+    // Iniciar: host confirma o início quando ambos estão prontos (mesmo evento ready)
+    $("startBtn").addEventListener("click", () => {
         socket.emit("duel:ready", {}, (r) => { if (!r.ok) alert(r.error); });
     });
 
