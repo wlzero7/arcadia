@@ -154,3 +154,54 @@
     color: var(--text);
     cursor: pointer;
 }
+
+/* ---------- Controles do leilão + escolhas (v1.1) ---------- */
+
+.auction-controls {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    margin-top: .8rem;
+}
+
+.auction-controls input {
+    width: 140px;
+    padding: .55rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+}
+
+.field-row {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    margin-top: .6rem;
+    justify-content: center;
+}
+
+.field-row label {
+    font-size: .8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.field-row input,
+.field-row select {
+    padding: .5rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+}
+
+#duelResult {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #fbbf24;
+    text-shadow: 0 0 16px rgba(251, 191, 36, .4);
+}
