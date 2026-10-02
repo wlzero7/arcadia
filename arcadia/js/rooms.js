@@ -1,5 +1,6 @@
 // ========================================
 // ARCADIA ROOMS — cliente multiplayer (Socket.IO)
+// v1.0: jogo Slots disponível nas salas coop
 // ========================================
 
 const Rooms = (() => {
@@ -11,14 +12,13 @@ const Rooms = (() => {
 
     // ---------- ELEMENTOS ----------
     const $ = (id) => document.getElementById(id);
-
     const createRoomBtn = $("createRoomBtn");
     const joinRoomBtn = $("joinRoomBtn");
     const joinCodeInput = $("joinCode");
     const roomsList = $("roomsList");
     const roomModal = $("roomModal");
-
     const toast = $("toast");
+
     function toastMsg(msg) {
         toast.textContent = msg;
         toast.classList.add("show");
@@ -36,23 +36,19 @@ const Rooms = (() => {
         return new Promise((resolve, reject) => {
             if (socket && socket.connected) return resolve(socket);
             socket = io(API_URL, { auth: { token: ArcadiaAPI.getToken() } });
-
             socket.on("connect", () => resolve(socket));
             socket.on("connect_error", (e) => {
                 toastMsg("Erro de conexão: " + e.message);
                 reject(e);
             });
-
             socket.on("room:update", (room) => {
                 currentRoom = room;
                 renderRoom(room);
             });
-
             socket.on("room:round", (round) => {
                 renderRound(round);
                 renderGameResult(round);
             });
-
             socket.on("room:chat", (msg) => {
                 const log = $("chatLog");
                 const div = document.createElement("div");
@@ -150,6 +146,7 @@ const Rooms = (() => {
                     if (!r.ok) toastMsg(r.error);
                 });
             });
+
         } else if (room.game === "coinflip") {
             area.innerHTML = `
                 <div class="dice-big" id="mpCoin">🪙</div>
@@ -176,6 +173,7 @@ const Rooms = (() => {
                     if (!r.ok) toastMsg(r.error);
                 });
             });
+
         } else if (room.game === "roulette") {
             area.innerHTML = `
                 <div class="rlm-last" id="mpRlLast">Façam suas apostas! 🎡</div>
@@ -220,6 +218,7 @@ const Rooms = (() => {
             $("mpSpin").addEventListener("click", () => {
                 socket.emit("room:rspin", {}, (r) => { if (!r.ok) toastMsg(r.error); });
             });
+
         } else if (room.game === "crash") {
             area.innerHTML = `
                 <div class="dice-big" id="mpCrash">🚀</div>
@@ -238,6 +237,40 @@ const Rooms = (() => {
                     if (!r.ok) toastMsg(r.error);
                 });
             });
+
+        } else if (room.game === "slots") {
+            area.innerHTML = `
+                <div class="dice-big" id="mpSlotReels">❔ ❔ ❔</div>
+                <div class="field">
+                    <label>Trunfo (opcional — consome a carta)</label>
+                    <select id="mpTrump"><option value="">— Nenhum —</option></select>
+                </div>
+                <div class="bet-row">
+                    <input type="number" id="mpBet" placeholder="Aposta (${room.minBet}-${room.maxBet})" min="${room.minBet}" max="${room.maxBet}">
+                    <button class="btn btn-primary" id="mpPlay">🎰 Girar</button>
+                </div>
+                <div class="game-result" id="mpResult"></div>
+            `;
+            // carrega o inventário de trunfos do jogador
+            if (ArcadiaAPI.isLoggedIn()) {
+                ArcadiaAPI.request("/api/games/slots/cards").then((data) => {
+                    const sel = $("mpTrump");
+                    (data.inventory || []).forEach((c) => {
+                        const opt = document.createElement("option");
+                        opt.value = c.key;
+                        opt.textContent = `${c.name} (x${c.qty})`;
+                        sel.appendChild(opt);
+                    });
+                }).catch(() => {});
+            }
+            $("mpPlay").addEventListener("click", () => {
+                socket.emit("room:play", {
+                    wager: Number($("mpBet").value),
+                    choice: { trump: $("mpTrump").value || undefined },
+                }, (r) => {
+                    if (!r.ok) toastMsg(r.error);
+                });
+            });
         }
     }
 
@@ -245,25 +278,37 @@ const Rooms = (() => {
         const el = $("mpResult");
         if (!el) return;
         el.className = "game-result " + round.outcome;
+
         if (round.type === "dice") {
             el.textContent = round.outcome === "win"
                 ? `🎲 Caiu ${round.roll} — ${round.playerName} ganhou ${ArcadiaWallet.format(round.payout)}!`
                 : `🎲 Caiu ${round.roll} — ${round.playerName} perdeu ${ArcadiaWallet.format(round.wager)}`;
             $("mpDice").textContent = ["", "⚀", "⚁", "⚂", "⚃", "⚄", "⚅"][round.roll];
+
         } else if (round.type === "coinflip") {
             el.textContent = round.outcome === "win"
                 ? `🪙 ${round.flip === "heads" ? "Cara" : "Coroa"} — ${round.playerName} ganhou ${ArcadiaWallet.format(round.payout)}!`
                 : `🪙 ${round.flip === "heads" ? "Cara" : "Coroa"} — ${round.playerName} perdeu ${ArcadiaWallet.format(round.wager)}`;
             $("mpCoin").textContent = round.flip === "heads" ? "👑" : "🦅";
+
         } else if (round.type === "roulette") {
             el.textContent = round.payout > 0
                 ? `🎡 Saiu ${round.number} (${colorName(round.color)}) — mesa pagou ${ArcadiaWallet.format(round.payout)}!`
                 : `🎡 Saiu ${round.number} (${colorName(round.color)}) — sem prêmios dessa vez.`;
+
         } else if (round.type === "crash") {
             el.textContent = round.outcome === "win"
                 ? `🚀 Cashout em ${round.multiplier}x — ${round.playerName} ganhou ${ArcadiaWallet.format(round.payout)}!`
                 : `💥 Crash em ${round.crashPoint}x — ${round.playerName} perdeu ${ArcadiaWallet.format(round.wager)}`;
             $("mpCrash").textContent = round.outcome === "win" ? "🚀" : "💥";
+
+        } else if (round.type === "slots") {
+            const reelsText = Array.isArray(round.reels) ? round.reels.join(" ") : "🎰";
+            el.textContent = round.outcome === "win"
+                ? `🎰 ${reelsText} — ${round.playerName} ganhou ${ArcadiaWallet.format(round.payout)}!`
+                : `🎰 ${reelsText} — ${round.playerName} perdeu ${ArcadiaWallet.format(round.wager)}`;
+            const reelsEl = $("mpSlotReels");
+            if (reelsEl) reelsEl.textContent = reelsText;
         }
     }
 
@@ -345,6 +390,7 @@ const Rooms = (() => {
 
     $("chatSend").addEventListener("click", sendChat);
     $("chatInput").addEventListener("keydown", (e) => { if (e.key === "Enter") sendChat(); });
+
     function sendChat() {
         const input = $("chatInput");
         if (input.value.trim()) {
