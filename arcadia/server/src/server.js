@@ -18,12 +18,12 @@ const walletRoutes = require("./routes/wallet.routes");
 const friendsRoutes = require("./routes/friends.routes");
 const blackjackRoutes = require("./routes/blackjack.routes");
 const rouletteRoutes = require("./routes/roulette.routes");
+const slotsRoutes = require("./routes/slots.routes");
 const { setupMultiplayer } = require("./realtime/rooms");
 const { setupBlackjackMultiplayer } = require("./realtime/blackjack-mp");
 const { setupRacing } = require("./realtime/racing");
 const { setupDuels } = require("./realtime/duels");
 const { initInvites } = require("./realtime/invites");
-const { initBalanceSocket } = require("./realtime/balance-socket");
 const progression = require("./services/progression.routes");
 
 const app = express();
@@ -83,6 +83,7 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/friends", friendsRoutes);
 app.use("/api/games", blackjackRoutes);
 app.use("/api/games", rouletteRoutes);
+app.use("/api/games/slots", slotsRoutes);
 app.use("/api/progression", progression.router);
 
 // ========================================
@@ -133,7 +134,6 @@ setupBlackjackMultiplayer(io);
 setupRacing(io);
 setupDuels(io);
 initInvites(io);
-initBalanceSocket(io);
 
 // ========================================
 // START
