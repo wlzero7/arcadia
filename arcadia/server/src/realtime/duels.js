@@ -1,20 +1,21 @@
 // ========================================
-// ARCADIA - DUELO x1 (v0.9)
+// ARCADIA - DUELO x1 (v1.0 — com Slots)
 // Você vs amigo, carteira DUEL separada, primeiro a falir perde
-// Jogos: dice, coinflip, mines (instantâneo simplificado), crash
+// Jogos: dice, coinflip, mines, crash, roulette, SLOTS (com trunfos)
 // ========================================
 
 const pool = require("../config/database");
 const { JWT_SECRET } = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
+const { TRUMPS, resolveSpin } = require("../services/slotsEngine");
 
-// duels[code] = { code, players: {p1:{userId,username,socketIds,ready}, p2}, turn: 'p1'|'p2', phase, round, log }
+// duels[code] = { code, players, turn, phase, round, log, auction, extraTurn, lastSlots }
 const duels = new Map();
 
 const DUEL_GAMES = ["dice", "coinflip", "crash"];
 
-// Leilão: 5 modos aleatórios sorteados; melhor lance escolhe o modo
-const AUCTION_GAMES = ["dice", "coinflip", "crash", "mines", "roulette"];
+// Leilão: 6 modos aleatórios sorteados; melhor lance escolhe o modo
+const AUCTION_GAMES = ["dice", "coinflip", "crash", "mines", "roulette", "slots"];
 
 function drawAuction() {
     const pool = [...AUCTION_GAMES].sort(() => Math.random() - 0.5).slice(0, 5);
@@ -37,6 +38,7 @@ function duelState(d) {
         auction: d.auction || null,
         auctionWinner: d.auctionWinner || null,
         chosenGame: d.chosenGame || null,
+        lastSlots: d.lastSlots || null,
         log: d.log.slice(-30),
     };
 }
@@ -81,6 +83,8 @@ function setupDuels(io) {
                 auction: null,
                 auctionWinner: null,
                 chosenGame: null,
+                extraTurn: null,
+                lastSlots: null,
                 log: [{ system: true, message: `${socket.username} criou o duelo. Compartilhe o código ${code}!`, at: Date.now() }],
             };
             duels.set(code, duel);
@@ -147,7 +151,7 @@ function setupDuels(io) {
             cb && cb({ ok: true, duel: duelState(d) });
         });
 
-        // ---------- LEILÃO (v0.9.4) ----------
+        // ---------- LEILÃO ----------
         socket.on("duel:bid", (data, cb) => {
             const d = duels.get(socket.data.duelCode);
             if (!d || d.phase !== "auction") return cb && cb({ ok: false, error: "Leilão não ativo." });
@@ -181,13 +185,12 @@ function setupDuels(io) {
 
             const myKey = d.players.p1.userId === socket.userId ? "p1" : "p2";
             const me = d.players[myKey];
-            const oppKey = myKey === "p1" ? "p2" : "p1";
 
             // verifico em qual(is) modo(s) o jogador venceu o leilão
             const wonSlots = [];
             d.auction.forEach((slot, idx) => {
                 const myBid = slot.bids[myKey] || 0;
-                const oppBid = slot.bids[oppKey] || 0;
+                const oppBid = slot.bids[d.players.p1.userId === socket.userId ? "p2" : "p1"] || 0;
                 if (myBid > oppBid && myBid > 0) wonSlots.push(idx);
             });
 
@@ -200,8 +203,6 @@ function setupDuels(io) {
             }
 
             const slot = d.auction[gameIdx];
-            const bidAmount = slot.bids[myKey];
-            // o lance vencedor é DESCONTADO da carteira DUEL (aposta pra escolher)
             if (me.balance < (Number(slot.bids[myKey]) || 0)) {
                 return cb && cb({ ok: false, error: "Saldo insuficiente para pagar o lance." });
             }
@@ -231,6 +232,8 @@ function setupDuels(io) {
 
             const game = d.chosenGame || String(data && data.game || "dice");
             let outcome, mult;
+            let extraTurn = false;
+
             if (game === "dice") {
                 const n = Number(data && data.choice && data.choice.number) || 1;
                 const roll = 1 + Math.floor(Math.random() * 6);
@@ -251,12 +254,10 @@ function setupDuels(io) {
                 if (outcome === "win") me.balance += Math.floor(wager * (target - 1));
                 else me.balance -= wager;
             } else if (game === "mines") {
-                // mines instantâneo: 3 minas, jogador "abre" 3 células implícitas
                 const mines = 3;
                 const picks = Math.max(1, Math.min(Number(data && data.choice && data.choice.picks) || 3, 10));
                 const comb = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = (r * (n - i)) / (i + 1); return r; };
                 const fairMult = comb(25, picks) / comb(25 - mines, picks);
-                // probabilidade real de sobreviver
                 outcome = Math.random() < Math.pow((25 - mines) / 25, picks) ? "win" : "loss";
                 if (outcome === "win") me.balance += Math.floor(wager * (fairMult - 1));
                 else me.balance -= wager;
@@ -271,16 +272,56 @@ function setupDuels(io) {
                 outcome = mult > 0 ? "win" : "loss";
                 if (outcome === "win") me.balance += Math.floor(wager * (mult - 1));
                 else me.balance -= wager;
+            } else if (game === "slots") {
+                // ---------- SLOTS com trunfos ----------
+                const trumpKey = String(data && data.choice && data.choice.trump || "");
+                let trump = null;
+                if (trumpKey && TRUMPS[trumpKey]) {
+                    const owned = pool.db.get(
+                        `SELECT id FROM slots_cards WHERE user_id = ? AND card_key = ? LIMIT 1`,
+                        [socket.userId, trumpKey]
+                    );
+                    if (owned) {
+                        pool.db.run(`DELETE FROM slots_cards WHERE id = ?`, [owned.id]);
+                        trump = trumpKey;
+                    }
+                }
+
+                // ALL WIN: all-in — quem vencer o giro leva tudo
+                if (trump === "allwin") {
+                    const oppKey = myKey === "p1" ? "p2" : "p1";
+                    const opp = d.players[oppKey];
+                    const pot = me.balance + opp.balance;
+                    const result = resolveSpin({ wager: Math.max(wager, 10), trump: null });
+                    if (result.outcome === "win") {
+                        me.balance = pot;
+                        opp.balance = 0;
+                    } else {
+                        opp.balance = pot;
+                        me.balance = 0;
+                    }
+                    d.lastSlots = result;
+                    d.log.push({ system: true, message: `🌈 ALL WIN! ${result.reels.join(" ")} — ${result.outcome === "win" ? me.username : opp.username} levou TUDO: ${pot} AC!`, at: Date.now() });
+                } else {
+                    const result = resolveSpin({ wager, trump });
+                    const delta = result.outcome === "win"
+                        ? result.payout - wager
+                        : -wager * (result.lossMultiplier || 1);
+                    me.balance += delta;
+                    d.lastSlots = result;
+                    d.log.push({
+                        system: true,
+                        message: `🎰 ${me.username}: ${result.reels.join(" ")} — ${result.outcome === "win" ? `ganhou ${result.payout} AC` : `perdeu ${wager * (result.lossMultiplier || 1)} AC`}${result.notes.length ? " · " + result.notes.join(" ") : ""}`,
+                        at: Date.now(),
+                    });
+                    if (trump === "bloqueador") {
+                        extraTurn = true;
+                        d.log.push({ system: true, message: `🔒 Bloqueador: ${me.username} gira de novo!`, at: Date.now() });
+                    }
+                }
             } else {
                 return cb && cb({ ok: false, error: "Jogo inválido." });
             }
-
-            d.log.push({
-                system: false,
-                username: me.username,
-                message: `${game} — ${outcome === "win" ? "ganhou" : "perdeu"} ${wager} AC (saldo: ${me.balance})`,
-                at: Date.now(),
-            });
 
             // falência?
             if (me.balance < 10) {
@@ -309,8 +350,12 @@ function setupDuels(io) {
                 return cb && cb({ ok: true });
             }
 
-            // troca o turno
-            d.turn = myKey === "p1" ? "p2" : "p1";
+            // troca o turno (Bloqueador segura a vez)
+            if (extraTurn) {
+                d.log.push({ system: true, message: `🔒 ${me.username} joga novamente!`, at: Date.now() });
+            } else {
+                d.turn = myKey === "p1" ? "p2" : "p1";
+            }
             io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
             cb && cb({ ok: true });
         });
