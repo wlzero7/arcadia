@@ -1,5 +1,7 @@
 // ========================================
 // ARCADIA - WALLET ROUTES
+// v1.0.2: getWallet("solo") em TODAS as rotas — a query crua sem kind
+// podia devolver a carteira coop/duel (0 AC) → cache travado em 0 no navegador
 // ========================================
 
 const express = require("express");
@@ -14,14 +16,8 @@ const router = express.Router();
 
 router.get("/", authenticate, async (req, res) => {
     try {
-        const wallet = await pool.get(
-            `SELECT w.balance, w.updated_at FROM wallets w WHERE w.user_id = ?`,
-            [req.user.id]
-        );
-
-        if (!wallet) {
-            return res.status(404).json({ status: "error", message: "Carteira não encontrada." });
-        }
+        // v1.0.2: getWallet garante a carteira SOLO correta (cria com 1M se não existir)
+        const wallet = await pool.getWallet(req.user.id, "solo");
 
         return res.status(200).json({ status: "success", balance: wallet.balance });
     } catch (error) {
@@ -75,10 +71,10 @@ router.post("/daily", authenticate, async (req, res) => {
         const streak = bonus && bonus.last_claim === yesterday
             ? Math.min(bonus.streak + 1, DAILY_STREAK_MAX)
             : 1;
-
         const amount = DAILY_BASE * streak;
 
-        const wallet = await pool.get(`SELECT id FROM wallets WHERE user_id = ?`, [req.user.id]);
+        // v1.0.2: getWallet garante a carteira SOLO correta
+        const wallet = await pool.getWallet(req.user.id, "solo");
 
         await pool.run(
             `INSERT INTO daily_bonus (user_id, last_claim, streak) VALUES (?, ?, ?)
@@ -110,26 +106,29 @@ router.post("/transfer", authenticate, async (req, res) => {
     const value = Math.floor(Number(amount));
 
     if (!toUsername || !Number.isFinite(value) || value <= 0) {
-        return res.status(400).json({ status: "error", message: "Informe destinatário e valor válido." });
+        return res.status(400).json({ status: "error", message: "Dados inválidos." });
     }
 
     try {
+        // destino: usuário + carteira SOLO dele
         const target = await pool.get(
-            `SELECT u.id, u.username, w.id AS wallet_id FROM users u
-             INNER JOIN wallets w ON w.user_id = u.id
-             WHERE LOWER(u.username) = LOWER(?)`,
+            `SELECT u.id, u.username, w.id AS wallet_id
+             FROM users u
+             INNER JOIN wallets w ON w.user_id = u.id AND w.kind = 'solo'
+             WHERE LOWER(u.username) = LOWER(?)
+             LIMIT 1`,
             [String(toUsername).trim()]
         );
 
         if (!target) {
             return res.status(404).json({ status: "error", message: "Jogador não encontrado." });
         }
-
         if (target.id === req.user.id) {
             return res.status(400).json({ status: "error", message: "Você não pode transferir para si mesmo." });
         }
 
-        const me = await pool.get(`SELECT id FROM wallets WHERE user_id = ?`, [req.user.id]);
+        // origem: v1.0.2 — getWallet garante a MINHA carteira SOLO correta
+        const me = await pool.getWallet(req.user.id, "solo");
 
         // Débito e crédito — se o débito falhar (saldo), o crédito não roda
         const myBalance = await pool.adjustBalance(me.id, -value, "transfer_out", "user", String(target.id));
