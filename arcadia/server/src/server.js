@@ -23,6 +23,7 @@ const { setupBlackjackMultiplayer } = require("./realtime/blackjack-mp");
 const { setupRacing } = require("./realtime/racing");
 const { setupDuels } = require("./realtime/duels");
 const { initInvites } = require("./realtime/invites");
+const { initBalanceSocket } = require("./realtime/balance-socket");
 const progression = require("./services/progression.routes");
 
 const app = express();
@@ -132,6 +133,7 @@ setupBlackjackMultiplayer(io);
 setupRacing(io);
 setupDuels(io);
 initInvites(io);
+initBalanceSocket(io);
 
 // ========================================
 // START
