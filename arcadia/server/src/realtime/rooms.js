@@ -2,11 +2,13 @@
 // ARCADIA - MULTIPLAYER ROOMS (Socket.IO)
 // A grande mecânica: carteira COMPARTILHADA entre amigos.
 // Todos apostam do pote comum. O pote é dinheiro real do grupo (AC).
+// v1.0: jogo Slots disponível nas salas (com trunfos e drop de cartas)
 // ========================================
 
 const pool = require("../config/database");
 const { JWT_SECRET } = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
+const { TRUMPS, resolveSpin, rollCardDrop } = require("../services/slotsEngine");
 
 // ========================================
 // ESTADO EM MEMÓRIA (fonte da verdade em tempo real)
@@ -23,9 +25,7 @@ const jwt = require("jsonwebtoken");
 // }
 
 const rooms = new Map();
-
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-
 const ROULETTE_RED = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
 
 function generateCode(len = 6) {
@@ -123,12 +123,31 @@ const MULTI_GAMES = {
             };
         },
     },
+    slots: {
+        // Slots do grupo (v1.0): mesma engine do solo/duelo, debitando do POTE.
+        // O trunfo é validado e consumido no handler room:play (precisa de DB).
+        label: "Slots do Grupo",
+        play(room, wager, choice) {
+            const trump = choice && choice.trump ? String(choice.trump) : null;
+            const result = resolveSpin({ wager, trump });
+            return {
+                type: "slots",
+                reels: result.reels,
+                outcome: result.outcome,
+                jackpot: result.jackpot,
+                multiplier: result.mult,
+                payout: result.payout,
+                lossMultiplier: result.lossMultiplier,
+                notes: result.notes,
+                wager,
+            };
+        },
+    },
 };
 
 // ========================================
 // SETUP SOCKET.IO
 // ========================================
-
 
 // ========================================
 // PERSISTÊNCIA (v0.7) — salas sobrevivem a restart
@@ -228,7 +247,6 @@ async function hydrateRooms() {
     }
 }
 
-
 function setupMultiplayer(io) {
     // Auth no handshake
     io.use((socket, next) => {
@@ -279,12 +297,11 @@ function setupMultiplayer(io) {
                     socketIds: new Set([socket.id]),
                     lastSeen: Date.now(),
                 });
+
                 rooms.set(code, room);
                 persistRoomCreate(room);
-
                 socket.data.roomCode = code;
                 socket.join(`room:${code}`);
-
                 if (typeof cb === "function") cb({ ok: true, room: roomSummary(room) });
             } catch (err) {
                 if (typeof cb === "function") cb({ ok: false, error: err.message });
@@ -296,14 +313,12 @@ function setupMultiplayer(io) {
             try {
                 const code = String(data && data.code || "").toUpperCase().trim();
                 const room = rooms.get(code);
-
                 if (!room) {
                     return typeof cb === "function" && cb({ ok: false, error: "Sala não encontrada." });
                 }
                 if (room.members.size >= room.maxPlayers && !room.members.has(socket.userId)) {
                     return typeof cb === "function" && cb({ ok: false, error: "Sala cheia." });
                 }
-
                 if (!room.members.has(socket.userId)) {
                     room.members.set(socket.userId, {
                         username: socket.username,
@@ -312,12 +327,10 @@ function setupMultiplayer(io) {
                     });
                     persistRoomMember(room, socket.userId, socket.username);
                 }
-
                 room.members.get(socket.userId).socketIds.add(socket.id);
                 room.members.get(socket.userId).lastSeen = Date.now();
                 socket.data.roomCode = code;
                 socket.join(`room:${code}`);
-
                 io.to(`room:${code}`).emit("room:update", roomSummary(room));
                 if (typeof cb === "function") cb({ ok: true, room: roomSummary(room) });
             } catch (err) {
@@ -349,7 +362,6 @@ function setupMultiplayer(io) {
                 }
 
                 await pool.adjustBalance(wallet.id, -amount, "room_stake", "room", code);
-
                 room.pot += amount;
                 room.stakes.set(socket.userId, (room.stakes.get(socket.userId) || 0) + amount);
                 persistPot(room);
@@ -360,7 +372,6 @@ function setupMultiplayer(io) {
                     message: `${socket.username} depositou ${amount} AC no pote.`,
                     at: Date.now(),
                 });
-
                 cb && cb({ ok: true, room: roomSummary(room) });
             } catch (err) {
                 cb && cb({ ok: false, error: err.message });
@@ -388,11 +399,39 @@ function setupMultiplayer(io) {
                     return cb && cb({ ok: false, error: "O pote não tem saldo para essa aposta." });
                 }
 
-                const result = game.play(room, wager, data && data.choice);
+                // SLOTS: valida e consome o trunfo ANTES de girar (server-authoritative)
+                let trump = null;
+                if (room.game === "slots" && data && data.choice && data.choice.trump) {
+                    const trumpKey = String(data.choice.trump);
+                    if (!TRUMPS[trumpKey]) {
+                        return cb && cb({ ok: false, error: "Trunfo inválido." });
+                    }
+                    if (TRUMPS[trumpKey].duelOnly) {
+                        return cb && cb({ ok: false, error: "Esse trunfo é exclusivo do modo Duelo." });
+                    }
+                    const owned = await pool.get(
+                        `SELECT id FROM slots_cards WHERE user_id = ? AND card_key = ? LIMIT 1`,
+                        [socket.userId, trumpKey]
+                    );
+                    if (!owned) {
+                        return cb && cb({ ok: false, error: "Você não possui esse trunfo." });
+                    }
+                    await pool.run(`DELETE FROM slots_cards WHERE id = ?`, [owned.id]);
+                    trump = trumpKey;
+                }
+
+                const choice = { ...(data && data.choice), trump };
+                const result = game.play(room, wager, choice);
 
                 // Debita do pote o wager; credita o payout
                 room.pot -= wager;
                 room.pot += result.payout;
+
+                // Duplicador: derrota custa o dobro — debita o extra com clamp de segurança
+                if (result.type === "slots" && result.outcome === "loss" && (result.lossMultiplier || 1) > 1) {
+                    const extra = wager * ((result.lossMultiplier || 1) - 1);
+                    room.pot -= Math.min(extra, room.pot);
+                }
 
                 // Ajusta stakes: quem ganhou, ganhou dos amigos. V1: o pote é único,
                 // stakes ficam como registro de contribuição.
@@ -404,13 +443,25 @@ function setupMultiplayer(io) {
                     potAfter: room.pot,
                     at: Date.now(),
                 };
+
+                // SLOTS: drop de carta (50%) para quem girou
+                if (room.game === "slots") {
+                    const card = rollCardDrop(false);
+                    if (card) {
+                        await pool.run(
+                            `INSERT INTO slots_cards (user_id, card_key, rarity) VALUES (?, ?, ?)`,
+                            [socket.userId, card.key, card.rarity]
+                        );
+                        entry.card = card;
+                    }
+                }
+
                 room.history.push(entry);
                 if (room.history.length > 100) room.history.shift();
                 persistPot(room);
 
                 io.to(`room:${code}`).emit("room:round", entry);
                 io.to(`room:${code}`).emit("room:update", roomSummary(room));
-
                 cb && cb({ ok: true, round: entry });
             } catch (err) {
                 cb && cb({ ok: false, error: err.message });
@@ -426,7 +477,6 @@ function setupMultiplayer(io) {
 
                 const myStake = room.stakes.get(socket.userId) || 0;
                 const amount = Math.floor(Number(data && data.amount) || myStake);
-
                 if (amount <= 0) return cb && cb({ ok: false, error: "Você não tem stake para sacar." });
                 if (amount > myStake) return cb && cb({ ok: false, error: "Valor maior que seu stake." });
                 if (amount > room.pot) return cb && cb({ ok: false, error: "O pote não tem saldo suficiente (alguém está ganhando!)." });
@@ -435,7 +485,6 @@ function setupMultiplayer(io) {
                 if (!wallet) return cb && cb({ ok: false, error: "Carteira não encontrada." });
 
                 await pool.adjustBalance(wallet.id, amount, "room_payout", "room", code);
-
                 room.pot -= amount;
                 room.stakes.set(socket.userId, myStake - amount);
                 persistPot(room);
@@ -446,7 +495,6 @@ function setupMultiplayer(io) {
                     message: `${socket.username} sacou ${amount} AC do pote.`,
                     at: Date.now(),
                 });
-
                 cb && cb({ ok: true, room: roomSummary(room) });
             } catch (err) {
                 cb && cb({ ok: false, error: err.message });
