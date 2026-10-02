@@ -1,7 +1,9 @@
 // ========================================
-// ARCADIA - DUELO x1 (v1.0 — com Slots)
-// Você vs amigo, carteira DUEL separada, primeiro a falir perde
-// Jogos: dice, coinflip, mines, crash, roulette, SLOTS (com trunfos)
+// ARCADIA - DUELO x1 (SERVIDOR, Socket.IO)
+// ⚠️ CÓDIGO DE SERVIDOR (Node) — a versão anterior deste arquivo
+// continha código de navegador (document/io do cliente) e crashava
+// o server no boot, derrubando TODOS os deploys.
+// Carteira DUEL separada. Primeiro a falir, perde.
 // ========================================
 
 const pool = require("../config/database");
@@ -9,39 +11,105 @@ const { JWT_SECRET } = require("../middleware/auth");
 const jwt = require("jsonwebtoken");
 const { TRUMPS, resolveSpin } = require("../services/slotsEngine");
 
-// duels[code] = { code, players, turn, phase, round, log, auction, extraTurn, lastSlots }
+const ROULETTE_RED = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
+
+// duels[code] = { code, phase, round, turn, players:{p1,p2}, auction, auctionWinner, chosenGame, log }
 const duels = new Map();
 
-const DUEL_GAMES = ["dice", "coinflip", "crash"];
-
-// Leilão: 6 modos aleatórios sorteados; melhor lance escolhe o modo
-const AUCTION_GAMES = ["dice", "coinflip", "crash", "mines", "roulette", "slots"];
-
-function drawAuction() {
-    const pool = [...AUCTION_GAMES].sort(() => Math.random() - 0.5).slice(0, 5);
-    return pool.map((g) => ({ game: g, bids: { p1: 0, p2: 0 } }));
+function pushLog(duel, message, system = false) {
+    duel.log.push({ system, message, at: Date.now() });
+    if (duel.log.length > 100) duel.log.shift();
 }
 
-function duelState(d) {
-    const p = (key) => {
-        const pl = d.players[key];
-        if (!pl) return null;
-        return { key, userId: pl.userId, username: pl.username, balance: pl.balance, ready: pl.ready };
-    };
+function duelState(duel) {
+    const p1 = duel.players.p1;
+    const p2 = duel.players.p2;
     return {
-        code: d.code,
-        phase: d.phase,
-        round: d.round,
-        turn: d.turn,
-        p1: p("p1"),
-        p2: p("p2"),
-        auction: d.auction || null,
-        auctionWinner: d.auctionWinner || null,
-        chosenGame: d.chosenGame || null,
-        lastSlots: d.lastSlots || null,
-        log: d.log.slice(-30),
+        code: duel.code,
+        phase: duel.phase,
+        round: duel.round,
+        turn: duel.turn,
+        p1: { userId: p1.userId, username: p1.username, balance: p1.balance, ready: p1.ready },
+        p2: p2 ? { userId: p2.userId, username: p2.username, balance: p2.balance, ready: p2.ready } : null,
+        auction: duel.auction,
+        auctionWinner: duel.auctionWinner,
+        chosenGame: duel.chosenGame,
+        log: duel.log.slice(-50),
     };
 }
+
+async function syncBalances(duel) {
+    for (const key of ["p1", "p2"]) {
+        const p = duel.players[key];
+        if (!p) continue;
+        const w = await pool.getWallet(p.userId, "duel");
+        p.balance = w.balance;
+    }
+}
+
+// ========================================
+// ENGINE DOS JOGOS DO DUELO (server-side)
+// ========================================
+
+function playGame(game, wager, choice) {
+    switch (game) {
+        case "dice": {
+            const n = choice && choice.number != null ? Number(choice.number) : null;
+            const roll = 1 + Math.floor(Math.random() * 6);
+            const win = n !== null && Number.isInteger(n) && n >= 1 && n <= 6 && roll === n;
+            return { outcome: win ? "win" : "loss", multiplier: win ? 6 : 0, payout: win ? wager * 6 : 0, detail: { roll, picked: n } };
+        }
+        case "coinflip": {
+            const side = choice && choice.side === "tails" ? "tails" : "heads";
+            const flip = Math.random() < 0.5 ? "heads" : "tails";
+            const win = flip === side;
+            return { outcome: win ? "win" : "loss", multiplier: win ? 2 : 0, payout: win ? wager * 2 : 0, detail: { flip, picked: side } };
+        }
+        case "crash": {
+            const target = Math.max(1.01, Math.min(Number(choice && choice.autoCashout) || 2, 100));
+            const u = Math.random();
+            const crashPoint = Math.max(1, Math.floor((1 / (1 - u)) * 100) / 100);
+            const win = crashPoint >= target;
+            return { outcome: win ? "win" : "loss", multiplier: win ? target : 0, payout: win ? Math.floor(wager * target) : 0, detail: { crashPoint, target } };
+        }
+        case "mines": {
+            const picks = Math.min(Math.max(Number(choice && choice.picks) || 3, 1), 20);
+            const cells = Array.from({ length: 25 }, (_, i) => i);
+            for (let i = cells.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [cells[i], cells[j]] = [cells[j], cells[i]];
+            }
+            const mines = new Set(cells.slice(0, 5)); // 5 minas fixas no duelo
+            let hit = false;
+            for (let i = 0; i < picks; i++) {
+                if (mines.has(cells[24 - i])) { hit = true; break; }
+            }
+            const c = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = (r * (n - i)) / (i + 1); return r; };
+            const fair = c(25, picks) / c(20, picks);
+            const win = !hit;
+            return { outcome: win ? "win" : "loss", multiplier: win ? Number(fair.toFixed(4)) : 0, payout: win ? Math.floor(wager * fair) : 0, detail: { picks, mines: [...mines] } };
+        }
+        case "roulette": {
+            const bet = choice && choice.bet ? String(choice.bet) : "red";
+            const number = Math.floor(Math.random() * 37);
+            const color = number === 0 ? "green" : ROULETTE_RED.has(number) ? "red" : "black";
+            let mult = 0;
+            if (bet === "red" && color === "red") mult = 2;
+            else if (bet === "black" && color === "black") mult = 2;
+            else if (bet === "even" && number !== 0 && number % 2 === 0) mult = 2;
+            else if (bet === "odd" && number % 2 === 1) mult = 2;
+            else if (bet === "low" && number >= 1 && number <= 18) mult = 2;
+            else if (bet === "high" && number >= 19 && number <= 36) mult = 2;
+            return { outcome: mult > 0 ? "win" : "loss", multiplier: mult, payout: wager * mult, detail: { number, color, bet } };
+        }
+        default:
+            throw new Error("Jogo inválido no duelo.");
+    }
+}
+
+// ========================================
+// SETUP
+// ========================================
 
 function setupDuels(io) {
     io.use((socket, next) => {
@@ -60,319 +128,272 @@ function setupDuels(io) {
     io.on("connection", (socket) => {
         socket.data.duelCode = null;
 
-        socket.on("duel:create", (_, cb) => {
-            let code;
-            do { code = Math.random().toString(36).slice(2, 7).toUpperCase(); } while (duels.has(code));
+        // ---------- CRIAR ----------
+        socket.on("duel:create", async (_, cb) => {
+            try {
+                let code;
+                do { code = Math.random().toString(36).slice(2, 7).toUpperCase(); } while (duels.has(code));
 
-            // carteira duel
-            let w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
-            if (!w) {
-                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)", [socket.userId]);
-                w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
+                const w = await pool.getWallet(socket.userId, "duel");
+                const duel = {
+                    code,
+                    phase: "waiting",
+                    round: 1,
+                    turn: "p1",
+                    players: {
+                        p1: { userId: socket.userId, username: socket.username, balance: w.balance, ready: false, socketIds: new Set([socket.id]) },
+                        p2: null,
+                    },
+                    auction: null,
+                    auctionWinner: null,
+                    chosenGame: null,
+                    log: [{ system: true, message: `${socket.username} criou o duelo!`, at: Date.now() }],
+                };
+                duels.set(code, duel);
+                socket.data.duelCode = code;
+                socket.join(`duel:${code}`);
+                io.to(`duel:${code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true, duel: duelState(duel) });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
             }
-
-            const duel = {
-                code,
-                phase: "waiting",
-                round: 1,
-                turn: "p1",
-                players: {
-                    p1: { userId: socket.userId, username: socket.username, balance: w.balance, ready: false, socketIds: new Set([socket.id]) },
-                    p2: null,
-                },
-                auction: null,
-                auctionWinner: null,
-                chosenGame: null,
-                extraTurn: null,
-                lastSlots: null,
-                log: [{ system: true, message: `${socket.username} criou o duelo. Compartilhe o código ${code}!`, at: Date.now() }],
-            };
-            duels.set(code, duel);
-            socket.data.duelCode = code;
-            socket.join(`duel:${code}`);
-            cb && cb({ ok: true, duel: duelState(duel) });
         });
 
-        socket.on("duel:join", (data, cb) => {
-            const d = duels.get(String(data && data.code || "").toUpperCase());
-            if (!d) return cb && cb({ ok: false, error: "Duelo não encontrado." });
-            if (d.players.p2) return cb && cb({ ok: false, error: "Duelo cheio." });
-            if (d.players.p1.userId === socket.userId) {
-                // reconexão
-                d.players.p1.socketIds.add(socket.id);
-                socket.data.duelCode = d.code;
-                socket.join(`duel:${d.code}`);
-                return cb && cb({ ok: true, duel: duelState(d) });
-            }
+        // ---------- ENTRAR ----------
+        socket.on("duel:join", async (data, cb) => {
+            try {
+                const code = String(data && data.code || "").toUpperCase().trim();
+                const duel = duels.get(code);
+                if (!duel) return cb && cb({ ok: false, error: "Duelo não encontrado." });
 
-            let w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
-            if (!w) {
-                pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)", [socket.userId]);
-                w = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'duel'", [socket.userId]);
-            }
-            d.players.p2 = { userId: socket.userId, username: socket.username, balance: w.balance, ready: false, socketIds: new Set([socket.id]) };
-            d.phase = "ready";
-            socket.data.duelCode = d.code;
-            socket.join(`duel:${d.code}`);
-            d.log.push({ system: true, message: `${socket.username} entrou no duelo! ⚔️`, at: Date.now() });
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-            cb && cb({ ok: true, duel: duelState(d) });
-        });
+                const w = await pool.getWallet(socket.userId, "duel");
 
-        socket.on("duel:ready", (_, cb) => {
-            const d = duels.get(socket.data.duelCode);
-            if (!d) return cb && cb({ ok: false, error: "Duelo não encontrado." });
-            const key = d.players.p1.userId === socket.userId ? "p1" : "p2";
-            const me = d.players[key];
-
-            // ready funciona em waiting (host antecipando) e ready
-            if (d.phase === "waiting" && !d.players.p2) {
-                me.ready = true;
-                io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-                return cb && cb({ ok: true, duel: duelState(d) });
-            }
-            if (d.phase !== "ready" && d.phase !== "auction") {
-                return cb && cb({ ok: false, error: "Aguardando oponente." });
-            }
-
-            me.ready = true;
-
-            if (d.players.p1.ready && d.players.p2.ready) {
-                if (!d.auction) {
-                    d.auction = drawAuction();
-                    d.phase = "auction";
-                    d.log.push({ system: true, message: "🔨 LEILÃO! 5 modos sorteados. Dê seu lance (da carteira DUEL) para escolher o modo de jogo!", at: Date.now() });
+                let key = null;
+                if (duel.players.p1.userId === socket.userId) key = "p1";
+                else if (duel.players.p2 && duel.players.p2.userId === socket.userId) key = "p2";
+                else if (!duel.players.p2) {
+                    duel.players.p2 = { userId: socket.userId, username: socket.username, balance: w.balance, ready: false, socketIds: new Set() };
+                    key = "p2";
+                    pushLog(duel, `${socket.username} entrou no duelo!`, true);
+                    // ambos dentro → leilão de modos
+                    duel.phase = "auction";
+                    duel.auction = ["dice", "coinflip", "crash", "mines", "roulette"].map((g) => ({ game: g, bids: { p1: 0, p2: 0 } }));
                 } else {
-                    d.phase = "playing";
-                    d.log.push({ system: true, message: "⚔️ Duelo iniciado! Falir = perder.", at: Date.now() });
+                    return cb && cb({ ok: false, error: "Esse duelo já está cheio." });
                 }
+
+                duel.players[key].socketIds.add(socket.id);
+                duel.players[key].balance = w.balance;
+                socket.data.duelCode = code;
+                socket.join(`duel:${code}`);
+                io.to(`duel:${code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true, duel: duelState(duel) });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
             }
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-            cb && cb({ ok: true, duel: duelState(d) });
         });
 
-        // ---------- LEILÃO ----------
-        socket.on("duel:bid", (data, cb) => {
-            const d = duels.get(socket.data.duelCode);
-            if (!d || d.phase !== "auction") return cb && cb({ ok: false, error: "Leilão não ativo." });
+        // ---------- PRONTO / INICIAR ----------
+        socket.on("duel:ready", async (_, cb) => {
+            try {
+                const duel = duels.get(socket.data.duelCode);
+                if (!duel) return cb && cb({ ok: false, error: "Você não está num duelo." });
 
-            const myKey = d.players.p1.userId === socket.userId ? "p1" : "p2";
-            const me = d.players[myKey];
-            const gameIdx = Number(data && data.gameIdx);
-            const amount = Math.floor(Number(data && data.amount));
+                const key = duel.players.p1.userId === socket.userId ? "p1" : "p2";
+                const me = duel.players[key];
 
-            if (!d.auction[gameIdx]) return cb && cb({ ok: false, error: "Modo inválido." });
-            if (!Number.isFinite(amount) || amount < 10) return cb && cb({ ok: false, error: "Lance mínimo: 10 AC." });
-            if (amount > me.balance) return cb && cb({ ok: false, error: "Saldo duel insuficiente para esse lance." });
+                if (duel.phase === "waiting" || duel.phase === "ready") {
+                    me.ready = !me.ready;
+                    const both = duel.players.p1.ready && duel.players.p2 && duel.players.p2.ready;
+                    if (both) {
+                        duel.phase = "ready";
+                        pushLog(duel, "Ambos prontos! O host pode iniciar.", true);
+                    } else {
+                        pushLog(duel, `${me.username} está pronto.`, true);
+                    }
+                }
 
-            const slot = d.auction[gameIdx];
-            const oppKey = myKey === "p1" ? "p2" : "p1";
-            const oppBid = slot.bids[oppKey] || 0;
+                // host clica Iniciar com ambos prontos → leilão
+                if (duel.phase === "ready" && key === "p1" && duel.players.p1.ready && duel.players.p2 && duel.players.p2.ready) {
+                    duel.phase = "auction";
+                    duel.auction = ["dice", "coinflip", "crash", "mines", "roulette"].map((g) => ({ game: g, bids: { p1: 0, p2: 0 } }));
+                    pushLog(duel, "🔨 Leilão de modos aberto!", true);
+                }
 
-            if (amount <= oppBid) {
-                return cb && cb({ ok: false, error: `Lance precisa superar o do oponente (${oppBid} AC).` });
+                io.to(`duel:${duel.code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
             }
-
-            slot.bids[myKey] = amount;
-            d.log.push({ system: true, message: `🔨 ${me.username} deu lance de ${amount} AC no modo ${slot.game}!`, at: Date.now() });
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-            cb && cb({ ok: true, duel: duelState(d) });
         });
 
-        socket.on("duel:choose", (data, cb) => {
-            const d = duels.get(socket.data.duelCode);
-            if (!d || d.phase !== "auction") return cb && cb({ ok: false, error: "Leilão não ativo." });
+        // ---------- LEILÃO: LANCE ----------
+        socket.on("duel:bid", async (data, cb) => {
+            try {
+                const duel = duels.get(socket.data.duelCode);
+                if (!duel || duel.phase !== "auction") return cb && cb({ ok: false, error: "Não está em leilão." });
 
-            const myKey = d.players.p1.userId === socket.userId ? "p1" : "p2";
-            const me = d.players[myKey];
+                const key = duel.players.p1.userId === socket.userId ? "p1" : "p2";
+                const idx = Number(data && data.gameIdx);
+                const amount = Math.floor(Number(data && data.amount));
+                if (!duel.auction[idx]) return cb && cb({ ok: false, error: "Modo inválido." });
+                if (!Number.isFinite(amount) || amount < 10) return cb && cb({ ok: false, error: "Lance mínimo: 10 AC." });
 
-            // verifico em qual(is) modo(s) o jogador venceu o leilão
-            const wonSlots = [];
-            d.auction.forEach((slot, idx) => {
-                const myBid = slot.bids[myKey] || 0;
-                const oppBid = slot.bids[d.players.p1.userId === socket.userId ? "p2" : "p1"] || 0;
-                if (myBid > oppBid && myBid > 0) wonSlots.push(idx);
-            });
+                const w = await pool.getWallet(socket.userId, "duel");
+                if (w.balance < amount) return cb && cb({ ok: false, error: "Saldo DUEL insuficiente para esse lance." });
 
-            if (!wonSlots.length) {
-                return cb && cb({ ok: false, error: "Você não venceu nenhum lance. Dê um lance primeiro!" });
+                duel.auction[idx].bids[key] = amount;
+                pushLog(duel, `${socket.username} deu ${amount} AC no modo ${duel.auction[idx].game}.`);
+                io.to(`duel:${duel.code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
             }
-            const gameIdx = Number(data && data.gameIdx);
-            if (!wonSlots.includes(gameIdx)) {
-                return cb && cb({ ok: false, error: "Você só pode escolher um modo que venceu no leilão." });
-            }
-
-            const slot = d.auction[gameIdx];
-            if (me.balance < (Number(slot.bids[myKey]) || 0)) {
-                return cb && cb({ ok: false, error: "Saldo insuficiente para pagar o lance." });
-            }
-            me.balance -= slot.bids[myKey];
-            d.auctionWinner = myKey;
-            d.chosenGame = slot.game;
-            d.phase = "playing";
-            d.turn = "p1";
-
-            d.log.push({ system: true, message: `⚔️ ${me.username} pagou ${slot.bids[myKey]} AC e escolheu ${slot.game.toUpperCase()}! Duelo iniciado — falir = perder.`, at: Date.now() });
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-            cb && cb({ ok: true, duel: duelState(d) });
         });
 
-        // jogar rodada: { game, wager, choice }
-        socket.on("duel:play", (data, cb) => {
-            const d = duels.get(socket.data.duelCode);
-            if (!d || d.phase !== "playing") return cb && cb({ ok: false, error: "Duelo não ativo." });
+        // ---------- LEILÃO: ESCOLHER MODO ----------
+        socket.on("duel:choose", async (data, cb) => {
+            try {
+                const duel = duels.get(socket.data.duelCode);
+                if (!duel || duel.phase !== "auction") return cb && cb({ ok: false, error: "Não está em leilão." });
 
-            const myKey = d.players.p1.userId === socket.userId ? "p1" : "p2";
-            if (d.turn !== myKey) return cb && cb({ ok: false, error: "Não é sua vez!" });
+                const key = duel.players.p1.userId === socket.userId ? "p1" : "p2";
+                const oppKey = key === "p1" ? "p2" : "p1";
+                const idx = Number(data && data.gameIdx);
+                const slot = duel.auction[idx];
+                if (!slot) return cb && cb({ ok: false, error: "Modo inválido." });
+                if ((slot.bids[key] || 0) <= (slot.bids[oppKey] || 0)) {
+                    return cb && cb({ ok: false, error: "Você precisa estar na frente nesse modo." });
+                }
 
-            const me = d.players[myKey];
-            const wager = Math.floor(Number(data && data.wager));
-            if (!Number.isFinite(wager) || wager < 10) return cb && cb({ ok: false, error: "Aposta mínima: 10 AC." });
-            if (wager > me.balance) return cb && cb({ ok: false, error: "Saldo duel insuficiente." });
+                // o lance vencedor é debitado da carteira DUEL
+                const bid = slot.bids[key];
+                const w = await pool.getWallet(socket.userId, "duel");
+                if (w.balance < bid) return cb && cb({ ok: false, error: "Saldo DUEL insuficiente." });
+                await pool.adjustBalance(w.id, -bid, "bet", "duel", duel.code);
 
-            const game = d.chosenGame || String(data && data.game || "dice");
-            let outcome, mult;
-            let extraTurn = false;
+                duel.auctionWinner = key;
+                duel.chosenGame = slot.game;
+                duel.phase = "playing";
+                duel.turn = key;
+                pushLog(duel, `${socket.username} venceu o leilão e escolheu ${slot.game}! (pagou ${bid} AC)`, true);
+                await syncBalances(duel);
+                io.to(`duel:${duel.code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
+            }
+        });
 
-            if (game === "dice") {
-                const n = Number(data && data.choice && data.choice.number) || 1;
-                const roll = 1 + Math.floor(Math.random() * 6);
-                outcome = roll === n ? "win" : "loss";
-                if (outcome === "win") { me.balance += wager * 5; }
-                else { me.balance -= wager; }
-            } else if (game === "coinflip") {
-                const side = data && data.choice && data.choice.side === "tails" ? "tails" : "heads";
-                const flip = Math.random() < 0.5 ? "heads" : "tails";
-                outcome = flip === side ? "win" : "loss";
-                if (outcome === "win") me.balance += wager;
-                else me.balance -= wager;
-            } else if (game === "crash") {
-                const target = Math.max(1.1, Math.min(Number(data && data.choice && data.choice.autoCashout) || 2, 10));
-                const u = Math.random();
-                const crashPoint = Math.max(1, 1 / (1 - u));
-                outcome = crashPoint >= target ? "win" : "loss";
-                if (outcome === "win") me.balance += Math.floor(wager * (target - 1));
-                else me.balance -= wager;
-            } else if (game === "mines") {
-                const mines = 3;
-                const picks = Math.max(1, Math.min(Number(data && data.choice && data.choice.picks) || 3, 10));
-                const comb = (n, k) => { let r = 1; for (let i = 0; i < k; i++) r = (r * (n - i)) / (i + 1); return r; };
-                const fairMult = comb(25, picks) / comb(25 - mines, picks);
-                outcome = Math.random() < Math.pow((25 - mines) / 25, picks) ? "win" : "loss";
-                if (outcome === "win") me.balance += Math.floor(wager * (fairMult - 1));
-                else me.balance -= wager;
-            } else if (game === "roulette") {
-                const betType = data && data.choice && data.choice.bet || "red";
-                const number = Math.floor(Math.random() * 37);
-                const RED = [1,3,5,7,9,12,14,16,18,19,21,23,25,27,30,32,34,36];
-                let mult = 0;
-                if (betType === "straight" && number === Number(data && data.choice && data.choice.value)) mult = 36;
-                else if (betType === "red" && RED.includes(number)) mult = 2;
-                else if (betType === "black" && number !== 0 && !RED.includes(number)) mult = 2;
-                outcome = mult > 0 ? "win" : "loss";
-                if (outcome === "win") me.balance += Math.floor(wager * (mult - 1));
-                else me.balance -= wager;
-            } else if (game === "slots") {
-                // ---------- SLOTS com trunfos ----------
-                const trumpKey = String(data && data.choice && data.choice.trump || "");
+        // ---------- JOGAR RODADA ----------
+        socket.on("duel:play", async (data, cb) => {
+            try {
+                const duel = duels.get(socket.data.duelCode);
+                if (!duel || duel.phase !== "playing") return cb && cb({ ok: false, error: "O duelo não está em jogo." });
+
+                const key = duel.players.p1.userId === socket.userId ? "p1" : "p2";
+                const oppKey = key === "p1" ? "p2" : "p1";
+                if (duel.turn !== key) return cb && cb({ ok: false, error: "Não é a sua vez." });
+
+                const game = String(data && data.game || duel.chosenGame || "dice");
+                const wager = Math.floor(Number(data && data.wager));
+                if (!Number.isFinite(wager) || wager < 10) return cb && cb({ ok: false, error: "Aposta mínima: 10 AC." });
+
+                const w = await pool.getWallet(socket.userId, "duel");
+                if (w.balance < wager) return cb && cb({ ok: false, error: "Saldo DUEL insuficiente." });
+
+                // SLOTS: valida e consome o trunfo antes de girar
                 let trump = null;
-                if (trumpKey && TRUMPS[trumpKey]) {
-                    const owned = pool.db.get(
+                if (game === "slots" && data && data.choice && data.choice.trump) {
+                    const trumpKey = String(data.choice.trump);
+                    if (!TRUMPS[trumpKey]) return cb && cb({ ok: false, error: "Trunfo inválido." });
+                    const owned = await pool.get(
                         `SELECT id FROM slots_cards WHERE user_id = ? AND card_key = ? LIMIT 1`,
                         [socket.userId, trumpKey]
                     );
-                    if (owned) {
-                        pool.db.run(`DELETE FROM slots_cards WHERE id = ?`, [owned.id]);
-                        trump = trumpKey;
-                    }
+                    if (!owned) return cb && cb({ ok: false, error: "Você não possui esse trunfo." });
+                    await pool.run(`DELETE FROM slots_cards WHERE id = ?`, [owned.id]);
+                    trump = trumpKey;
                 }
 
-                // ALL WIN: all-in — quem vencer o giro leva tudo
-                if (trump === "allwin") {
-                    const oppKey = myKey === "p1" ? "p2" : "p1";
-                    const opp = d.players[oppKey];
-                    const pot = me.balance + opp.balance;
-                    const result = resolveSpin({ wager: Math.max(wager, 10), trump: null });
-                    if (result.outcome === "win") {
-                        me.balance = pot;
-                        opp.balance = 0;
-                    } else {
-                        opp.balance = pot;
-                        me.balance = 0;
-                    }
-                    d.lastSlots = result;
-                    d.log.push({ system: true, message: `🌈 ALL WIN! ${result.reels.join(" ")} — ${result.outcome === "win" ? me.username : opp.username} levou TUDO: ${pot} AC!`, at: Date.now() });
+                // debita a aposta do jogador da vez
+                await pool.adjustBalance(w.id, -wager, "bet", "duel", duel.code);
+
+                let result;
+                if (game === "slots") {
+                    const r = resolveSpin({ wager, trump });
+                    result = { outcome: r.outcome, multiplier: r.mult, payout: r.payout, detail: { reels: r.reels, jackpot: r.jackpot } };
                 } else {
-                    const result = resolveSpin({ wager, trump });
-                    const delta = result.outcome === "win"
-                        ? result.payout - wager
-                        : -wager * (result.lossMultiplier || 1);
-                    me.balance += delta;
-                    d.lastSlots = result;
-                    d.log.push({
-                        system: true,
-                        message: `🎰 ${me.username}: ${result.reels.join(" ")} — ${result.outcome === "win" ? `ganhou ${result.payout} AC` : `perdeu ${wager * (result.lossMultiplier || 1)} AC`}${result.notes.length ? " · " + result.notes.join(" ") : ""}`,
-                        at: Date.now(),
-                    });
-                    if (trump === "bloqueador") {
-                        extraTurn = true;
-                        d.log.push({ system: true, message: `🔒 Bloqueador: ${me.username} gira de novo!`, at: Date.now() });
-                    }
+                    result = playGame(game, wager, data && data.choice);
                 }
-            } else {
-                return cb && cb({ ok: false, error: "Jogo inválido." });
+
+                const opp = duel.players[oppKey];
+                const oppWallet = await pool.getWallet(opp.userId, "duel");
+
+                if (result.outcome === "win" && result.payout > 0) {
+                    // o prêmio sai da carteira DUEL do oponente
+                    const debit = Math.min(result.payout, oppWallet.balance);
+                    await pool.adjustBalance(oppWallet.id, -debit, "bet", "duel", duel.code);
+                    await pool.adjustBalance(w.id, debit, "payout", "duel", duel.code);
+                    pushLog(duel, `${socket.username} jogou ${game} e GANHOU ${debit} AC de ${opp.username}!`);
+                } else {
+                    pushLog(duel, `${socket.username} jogou ${game} e perdeu ${wager} AC.`);
+                }
+
+                await syncBalances(duel);
+
+                // falência? primeiro a zerar perde
+                const p1b = duel.players.p1.balance;
+                const p2b = duel.players.p2 ? duel.players.p2.balance : 1;
+                if (p1b <= 0 || p2b <= 0) {
+                    const winnerKey = p1b <= 0 ? "p2" : "p1";
+                    await finishDuel(duel, io, winnerKey);
+                    return cb && cb({ ok: true, result });
+                }
+
+                // passa a vez
+                duel.turn = oppKey;
+                if (duel.turn === "p1") duel.round++;
+                io.to(`duel:${duel.code}`).emit("duel:state", duelState(duel));
+                cb && cb({ ok: true, result });
+            } catch (err) {
+                cb && cb({ ok: false, error: err.message });
             }
-
-            // falência?
-            if (me.balance < 10) {
-                d.phase = "finished";
-                const winnerKey = myKey === "p1" ? "p2" : "p1";
-                const winner = d.players[winnerKey];
-                d.log.push({ system: true, message: `💀 ${me.username} faliu! ${winner.username} VENCEU O DUELO! 🏆`, at: Date.now() });
-
-                pool.db.run(
-                    `INSERT INTO duel_stats (user_id, wins, losses) VALUES (?, 1, 0)
-                     ON CONFLICT(user_id) DO UPDATE SET wins = wins + 1`,
-                    [winner.userId]
-                );
-                pool.db.run(
-                    `INSERT INTO duel_stats (user_id, wins, losses) VALUES (?, 0, 1)
-                     ON CONFLICT(user_id) DO UPDATE SET losses = losses + 1`,
-                    [me.userId]
-                );
-
-                // persiste saldos finais
-                pool.db.run("UPDATE wallets SET balance = ? WHERE user_id = ? AND kind = 'duel'", [d.players.p1.balance, d.players.p1.userId]);
-                pool.db.run("UPDATE wallets SET balance = ? WHERE user_id = ? AND kind = 'duel'", [d.players.p2.balance, d.players.p2.userId]);
-
-                io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-                io.to(`duel:${d.code}`).emit("duel:finished", { winner: winner.username });
-                return cb && cb({ ok: true });
-            }
-
-            // troca o turno (Bloqueador segura a vez)
-            if (extraTurn) {
-                d.log.push({ system: true, message: `🔒 ${me.username} joga novamente!`, at: Date.now() });
-            } else {
-                d.turn = myKey === "p1" ? "p2" : "p1";
-            }
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-            cb && cb({ ok: true });
         });
 
-        socket.on("duel:chat", (data) => {
-            const d = duels.get(socket.data.duelCode);
-            if (!d) return;
-            const message = String(data && data.message || "").slice(0, 200).trim();
-            if (!message) return;
-            d.log.push({ username: socket.username, message, at: Date.now() });
-            io.to(`duel:${d.code}`).emit("duel:state", duelState(d));
-        });
-
+        // ---------- DISCONNECT ----------
         socket.on("disconnect", () => {
-            // duelos persistem em memória para reconexão rápida
+            const duel = duels.get(socket.data.duelCode);
+            if (!duel) return;
+            const key = duel.players.p1.userId === socket.userId ? "p1" : (duel.players.p2 && duel.players.p2.userId === socket.userId ? "p2" : null);
+            if (key) duel.players[key].socketIds.delete(socket.id);
         });
     });
+
+    async function finishDuel(duel, io, winnerKey) {
+        duel.phase = "finished";
+        const winner = duel.players[winnerKey];
+        const loserKey = winnerKey === "p1" ? "p2" : "p1";
+        const loser = duel.players[loserKey];
+
+        // registra nas estatísticas de duelo
+        try {
+            await pool.run(
+                `INSERT INTO duel_stats (user_id, wins, losses) VALUES (?, 1, 0)
+                 ON CONFLICT(user_id) DO UPDATE SET wins = wins + 1`,
+                [winner.userId]
+            );
+            await pool.run(
+                `INSERT INTO duel_stats (user_id, wins, losses) VALUES (?, 0, 1)
+                 ON CONFLICT(user_id) DO UPDATE SET losses = losses + 1`,
+                [loser.userId]
+            );
+        } catch (_) {}
+
+        pushLog(duel, `🏆 ${winner.username} venceu o duelo! ${loser.username} faliu.`, true);
+        io.to(`duel:${duel.code}`).emit("duel:state", duelState(duel));
+        io.to(`duel:${duel.code}`).emit("duel:finished", { winner: winner.username });
+    }
 
     return { duels };
 }
