@@ -1,5 +1,7 @@
 // ========================================
-// ARCADIA RACING — cliente multiplayer
+// ARCADIA RACING — cliente multiplayer (v1.1)
+// v1.1: barra de aposta própria (valor + confirmar), seleção clara
+// do cavalo e guards contra elementos ausentes
 // ========================================
 
 (() => {
@@ -36,11 +38,45 @@
                 const me = ArcadiaAPI.getUser();
                 if (f.payouts.some((p) => p.userId === (me || {}).id)) Sfx.raceWin(); else Sfx.lose();
                 const res = $("raceResults");
+                if (!res) return;
                 res.classList.remove("hidden");
-                const mine = f.payouts.find((p) => p.userId === (ArcadiaAPI.getUser() || {}).id);
+                const mine = f.payouts.find((p) => p.userId === (me || {}).id);
                 res.innerHTML = `🏆 <strong>${f.winner.emoji} ${f.winner.name}</strong> venceu! (${f.odds}x)` +
                     (mine ? ` — Você ganhou ${mine.payout.toLocaleString("pt-BR")} AC! 🎉` : "");
                 if (mine) ArcadiaWallet.refresh();
+            });
+        });
+    }
+
+    // ---------- BARRA DE APOSTA (injeta se o HTML não tiver) ----------
+    function ensureBetBar() {
+        if ($("betAmount") && $("betBtn")) return; // HTML já tem
+        const wrap = $("raceWrap");
+        if (!wrap || $("raceBetBar")) return;
+        const bar = document.createElement("div");
+        bar.id = "raceBetBar";
+        bar.className = "race-bet-bar";
+        bar.innerHTML = `
+            <input type="number" id="betAmount" value="100" min="10" placeholder="Aposta (AC)">
+            <button class="btn btn-primary" id="betBtn">💰 Confirmar aposta</button>
+        `;
+        wrap.appendChild(bar);
+    }
+
+    function bindBetButton() {
+        const betBtn = $("betBtn");
+        if (!betBtn || betBtn.dataset.bound === "1") return;
+        betBtn.dataset.bound = "1";
+        betBtn.addEventListener("click", () => {
+            if (selectedHorse === null) return alert("Selecione um cavalo primeiro (clique em Apostar na pista)!");
+            const amount = Number($("betAmount").value);
+            if (!Number.isFinite(amount) || amount < 10) return alert("Aposta mínima: 10 AC.");
+            socket.emit("race:bet", { horseId: selectedHorse, amount }, (r) => {
+                if (!r.ok) alert(r.error);
+                else {
+                    Sfx.chip();
+                    ArcadiaWallet.refresh();
+                }
             });
         });
     }
@@ -54,6 +90,11 @@
         const isHost = me && r.hostId === me.id;
         $("startRaceBtn").classList.toggle("hidden", !(isHost && r.phase === "betting"));
         $("betRow").classList.toggle("hidden", r.phase !== "betting");
+
+        ensureBetBar();
+        bindBetButton();
+        const betBar = $("raceBetBar");
+        if (betBar) betBar.classList.toggle("hidden", r.phase !== "betting");
 
         // pista
         const track = $("raceTrack");
@@ -80,6 +121,7 @@
                 b.closest(".race-lane").classList.add("selected");
                 track.querySelectorAll("[data-horse]").forEach((x) => x.classList.remove("selected"));
                 b.classList.add("selected");
+                Sfx.click();
             });
         });
 
@@ -108,14 +150,6 @@
         socket.emit("race:join", { code: $("joinCode").value }, (r) => {
             if (r.ok) { race = r.race; render(race); }
             else alert(r.error);
-        });
-    });
-
-    $("betBtn").addEventListener("click", () => {
-        if (selectedHorse === null) return alert("Selecione um cavalo!");
-        socket.emit("race:bet", { horseId: selectedHorse, amount: Number($("betAmount").value) }, (r) => {
-            if (!r.ok) alert(r.error);
-            else ArcadiaWallet.refresh();
         });
     });
 
