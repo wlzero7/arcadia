@@ -86,11 +86,8 @@ const ArcadiaWallet = (() => {
     // Encontra todos os elementos de UI de um kind
     function elementsFor(kind) {
         const found = new Set();
-        // padrão novo: .wallet-balance[data-wallet="solo"] etc.
         document.querySelectorAll(`.wallet-balance[data-wallet="${kind}"]`).forEach((el) => found.add(el));
-        // qualquer elemento com data-wallet (mesmo sem a classe)
         document.querySelectorAll(`[data-wallet="${kind}"]`).forEach((el) => found.add(el));
-        // IDs legados
         (LEGACY_IDS[kind] || []).forEach((id) => {
             const el = document.getElementById(id);
             if (el) found.add(el);
@@ -120,13 +117,11 @@ const ArcadiaWallet = (() => {
     function updateWalletUI(kind, balance, delta) {
         const els = elementsFor(kind);
         els.forEach((el) => {
-            // valor atual exibido (parse do texto "1.234 AC")
             const parsed = Number(String(el.textContent).replace(/\./g, "").replace(/[^\d-]/g, ""));
             const from = Number.isFinite(parsed) ? parsed : balance;
             animateValue(el, from, balance);
             el.classList.remove("wallet-flash-up", "wallet-flash-down");
-            // força reflow pra reiniciar a animação se já estava animando
-            void el.offsetWidth;
+            void el.offsetWidth; // força reflow pra reiniciar a animação
             el.classList.add(delta >= 0 ? "wallet-flash-up" : "wallet-flash-down");
             setTimeout(() => el.classList.remove("wallet-flash-up", "wallet-flash-down"), 750);
         });
