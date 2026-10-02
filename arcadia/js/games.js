@@ -16,6 +16,7 @@ const walletBalance =
     document.getElementById(
         "walletBalance"
     );
+
 updateWalletPreview();
 
 // ========================================
@@ -28,7 +29,6 @@ filterButtons.forEach((button) => {
 
         const selectedFilter =
             button.dataset.filter;
-
 
         // Atualiza botão selecionado
 
@@ -80,6 +80,7 @@ playDiceButton.addEventListener(
 
     }
 );
+
 function updateWalletPreview() {
 
     const balance =
@@ -108,10 +109,10 @@ if (playMinesButton) {
                 "mines.html";
 
         }
+
     );
 
 }
-
 
 // ========================================
 // CRASH
@@ -130,10 +131,10 @@ if (playCrashButton) {
                 "crash.html";
 
         }
+
     );
 
 }
-
 
 // ========================================
 // BLACKJACK + ROLETA
@@ -152,6 +153,7 @@ if (playBlackjackButton) {
                 "blackjack.html";
 
         }
+
     );
 
 }
@@ -169,10 +171,10 @@ if (playRouletteButton) {
                 "roulette.html";
 
         }
+
     );
 
 }
-
 
 // ========================================
 // RACING + DUEL + BJ MULTIPLAYER (v0.9)
@@ -191,6 +193,7 @@ if (playRacingButton) {
                 "racing.html";
 
         }
+
     );
 
 }
@@ -208,6 +211,7 @@ if (playDuelButton) {
                 "duel.html";
 
         }
+
     );
 
 }
@@ -225,6 +229,7 @@ if (playBjMpButton) {
                 "blackjack-mp.html";
 
         }
+
     );
 
 }
@@ -247,10 +252,35 @@ if (playPlinkoButton) {
                 "plinko.html";
 
         }
+
+    );
+
+}
+
+
+// ========================================
+// SLOTS (v1.0)
+// ========================================
+
+const playSlotsButton =
+    document.getElementById("playSlots");
+
+if (playSlotsButton) {
+
+    playSlotsButton.addEventListener(
+        "click",
+        () => {
+
+            window.location.href =
+                "slots.html";
+
+        }
+
     );
 
 }
 
 
 updateWalletPreview();
+
 document.addEventListener("arcadia:balance", updateWalletPreview);
