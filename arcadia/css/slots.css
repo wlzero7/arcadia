@@ -1,0 +1,399 @@
+/* ================================
+   ARCADIA - SLOTS (v1.0)
+   Máquina neon, rolos com giro vertical, raridades coloridas
+   ================================ */
+
+.slots-main { padding: 2rem 0 4rem; }
+
+.slots-main h1 {
+    font-size: 2.2rem;
+    margin-bottom: .4rem;
+    background: linear-gradient(90deg, var(--text), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.accent { color: var(--primary); -webkit-text-fill-color: initial; }
+
+.slots-main > .muted { margin-bottom: 1.5rem; }
+.muted.small { font-size: .8rem; }
+
+.slots-layout {
+    display: grid;
+    grid-template-columns: 300px 1fr 300px;
+    gap: 1.5rem;
+    align-items: start;
+}
+
+/* ---------- CONTROLES ---------- */
+
+.slots-controls {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+}
+
+.slots-controls::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, .6), transparent);
+}
+
+.field { margin-bottom: .9rem; }
+
+.field label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-secondary);
+    margin-bottom: .35rem;
+}
+
+.field input, .field select {
+    width: 100%;
+    padding: .65rem .85rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    font-weight: 600;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.field input:focus, .field select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+.btn-block { width: 100%; }
+
+.slots-info {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    margin-top: 1rem;
+}
+
+.slots-info div {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9rem;
+    padding: .45rem .7rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+}
+
+/* ---------- MÁQUINA ---------- */
+
+.slots-machine-wrap { display: flex; flex-direction: column; gap: .8rem; }
+
+.slots-machine {
+    background: linear-gradient(180deg, #1c1230, #120a20);
+    border: 2px solid rgba(139, 92, 246, .5);
+    border-radius: 22px;
+    padding: 1.4rem;
+    box-shadow:
+        inset 0 0 60px rgba(0, 0, 0, .55),
+        0 0 40px rgba(139, 92, 246, .18),
+        var(--shadow-card);
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow .4s ease, border-color .4s ease;
+}
+
+.machine-top {
+    text-align: center;
+    font-weight: 800;
+    letter-spacing: .35em;
+    font-size: .85rem;
+    color: var(--primary);
+    text-shadow: 0 0 16px rgba(139, 92, 246, .7);
+    margin-bottom: 1rem;
+}
+
+.reels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: .7rem;
+}
+
+.reel {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3.2rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: inset 0 6px 18px rgba(0, 0, 0, .6);
+    overflow: hidden;
+}
+
+.reel.spinning {
+    animation: reelSpin .18s linear infinite;
+    filter: blur(1px);
+}
+
+@keyframes reelSpin {
+    0%   { transform: translateY(-14%); }
+    50%  { transform: translateY(14%); }
+    100% { transform: translateY(-14%); }
+}
+
+/* estados da máquina */
+.slots-machine.won {
+    border-color: rgba(34, 197, 94, .6);
+    box-shadow: inset 0 0 60px rgba(0, 0, 0, .55), 0 0 50px rgba(34, 197, 94, .3);
+}
+
+.slots-machine.lost {
+    border-color: rgba(239, 68, 68, .45);
+}
+
+.slots-machine.jackpot {
+    border-color: #fbbf24;
+    animation: jackpotFlash .35s ease-in-out 4;
+}
+
+@keyframes jackpotFlash {
+    0%, 100% { box-shadow: inset 0 0 60px rgba(0,0,0,.55), 0 0 60px rgba(251, 191, 36, .55); }
+    50% { box-shadow: inset 0 0 60px rgba(251, 191, 36, .25), 0 0 90px rgba(251, 191, 36, .7); }
+}
+
+/* luzinhas da marquee */
+.machine-lights {
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    margin-top: 1rem;
+}
+
+.machine-lights span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: rgba(139, 92, 246, .25);
+    animation: lightBlink 1.2s ease-in-out infinite;
+}
+
+.machine-lights span:nth-child(2n) { animation-delay: .3s; }
+.machine-lights span:nth-child(3n) { animation-delay: .6s; }
+
+@keyframes lightBlink {
+    0%, 100% { background: rgba(139, 92, 246, .25); box-shadow: none; }
+    50% { background: var(--primary); box-shadow: 0 0 10px rgba(139, 92, 246, .8); }
+}
+
+/* ---------- NOTAS / TRUNFOS USADOS ---------- */
+
+.slots-notes {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    min-height: 1.5rem;
+}
+
+.slots-notes .note {
+    font-size: .85rem;
+    font-weight: 600;
+    color: var(--secondary);
+    background: rgba(34, 211, 238, .08);
+    border: 1px solid rgba(34, 211, 238, .3);
+    border-radius: 8px;
+    padding: .35rem .7rem;
+    animation: noteIn .3s var(--ease-spring) both;
+}
+
+@keyframes noteIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- TABELA DE PRÊMIOS ---------- */
+
+.paytable {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.2rem;
+    box-shadow: var(--shadow-card);
+}
+
+.paytable h3 { font-size: .95rem; margin-bottom: .6rem; }
+
+.paytable-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: .9rem;
+    padding: .3rem .5rem;
+    border-radius: 8px;
+    transition: background .15s ease;
+}
+
+.paytable-row:hover { background: rgba(139, 92, 246, .08); }
+
+.paytable-row.jackpot strong {
+    color: #fbbf24;
+    text-shadow: 0 0 12px rgba(251, 191, 36, .5);
+}
+
+/* ---------- INVENTÁRIO ---------- */
+
+.slots-inventory {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    box-shadow: var(--shadow-card);
+}
+
+.inv-header { margin-bottom: .6rem; }
+
+.inv-header span {
+    color: var(--secondary);
+    font-size: .65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.inv-header h2 { font-size: 1.2rem; margin-top: 2px; }
+
+.cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: .45rem;
+    max-height: 480px;
+    overflow-y: auto;
+    margin-top: .6rem;
+}
+
+.empty-history {
+    color: var(--text-secondary);
+    font-size: .85rem;
+    text-align: center;
+    padding: 24px 0;
+}
+
+.slot-card {
+    border: 1px solid var(--border);
+    border-left-width: 4px;
+    border-radius: 10px;
+    padding: .55rem .7rem;
+    background: var(--background);
+    animation: cardIn .3s var(--ease-spring) both;
+    transition: transform .15s var(--ease-spring), border-color .2s ease;
+}
+
+.slot-card:hover { transform: translateX(3px); }
+
+@keyframes cardIn {
+    from { opacity: 0; transform: translateX(-12px); }
+    to { opacity: 1; transform: none; }
+}
+
+.slot-card .sc-name {
+    font-weight: 700;
+    font-size: .88rem;
+    display: flex;
+    justify-content: space-between;
+    gap: .4rem;
+}
+
+.slot-card .sc-qty {
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.slot-card .sc-desc {
+    font-size: .75rem;
+    color: var(--text-secondary);
+    margin-top: .2rem;
+    line-height: 1.4;
+}
+
+.slot-card .sc-rarity {
+    font-size: .65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+}
+
+/* ---------- RARIDADES ---------- */
+
+.rarity-comum      { border-left-color: #94a3b8; }
+.rarity-comum .sc-rarity    { color: #94a3b8; }
+
+.rarity-rara       { border-left-color: #38bdf8; }
+.rarity-rara .sc-rarity    { color: #38bdf8; }
+
+.rarity-super_rara { border-left-color: #a78bfa; }
+.rarity-super_rara .sc-rarity { color: #a78bfa; }
+
+.rarity-epica      { border-left-color: #e879f9; }
+.rarity-epica .sc-rarity     { color: #e879f9; }
+
+.rarity-lendaria   { border-left-color: #fbbf24; }
+.rarity-lendaria .sc-rarity  { color: #fbbf24; text-shadow: 0 0 10px rgba(251, 191, 36, .5); }
+
+.rarity-cromatica  { border-left-color: #f43f5e; }
+.rarity-cromatica .sc-rarity {
+    background: linear-gradient(90deg, #f43f5e, #fbbf24, #34d399, #38bdf8, #a78bfa);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: chromaShift 3s linear infinite;
+    background-size: 200% 100%;
+}
+
+@keyframes chromaShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 200% 50%; }
+}
+
+.slot-card.rarity-cromatica {
+    box-shadow: 0 0 16px rgba(244, 63, 94, .25);
+}
+
+/* ---------- RESULTADO ---------- */
+
+.game-result {
+    margin-top: 1rem;
+    text-align: center;
+    font-weight: 600;
+    min-height: 1.4rem;
+    animation: msgIn .3s var(--ease-spring);
+}
+
+.game-result.win { color: var(--success); }
+.game-result.loss { color: var(--danger); }
+
+@keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- RESPONSIVO ---------- */
+
+@media (max-width: 1100px) {
+    .slots-layout { grid-template-columns: 1fr 1fr; }
+    .slots-inventory { grid-column: 1 / -1; }
+}
+
+@media (max-width: 800px) {
+    .slots-layout { grid-template-columns: 1fr; }
+    .reel { font-size: 2.4rem; }
+}
