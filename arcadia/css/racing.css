@@ -265,3 +265,25 @@
     from { opacity: 0; transform: scale(.95) translateY(8px); }
     to { opacity: 1; transform: none; }
 }
+
+/* ---------- Barra de aposta (v1.1) ---------- */
+.race-bet-bar {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1rem;
+    padding: .8rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+
+.race-bet-bar input {
+    width: 140px;
+    padding: .55rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+}
