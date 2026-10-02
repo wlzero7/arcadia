@@ -1,5 +1,7 @@
 // ========================================
 // ARCADIA - SERVER (Express + Socket.IO + SQLite)
+// v1.0.1: /api/games/slots montado ANTES do /api/games
+// (o coringa /:game/play do game.routes sequestrava a rota do Slots)
 // ========================================
 
 require("dotenv").config();
@@ -24,6 +26,7 @@ const { setupBlackjackMultiplayer } = require("./realtime/blackjack-mp");
 const { setupRacing } = require("./realtime/racing");
 const { setupDuels } = require("./realtime/duels");
 const { initInvites } = require("./realtime/invites");
+const { initBalanceSocket } = require("./realtime/balance-socket");
 const progression = require("./services/progression.routes");
 
 const app = express();
@@ -75,15 +78,17 @@ app.use((req, res, next) => {
 
 // ========================================
 // ROTAS
+// ⚠️ ORDEM IMPORTA: rotas específicas ANTES de rotas com coringa.
+// /api/games/slots precisa vir antes de /api/games (que tem /:game/play).
 // ========================================
 
 app.use("/api/auth", authRoutes);
+app.use("/api/games/slots", slotsRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/friends", friendsRoutes);
 app.use("/api/games", blackjackRoutes);
 app.use("/api/games", rouletteRoutes);
-app.use("/api/games/slots", slotsRoutes);
 app.use("/api/progression", progression.router);
 
 // ========================================
@@ -134,6 +139,7 @@ setupBlackjackMultiplayer(io);
 setupRacing(io);
 setupDuels(io);
 initInvites(io);
+initBalanceSocket(io);
 
 // ========================================
 // START
