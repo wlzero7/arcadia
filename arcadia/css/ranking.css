@@ -1,29 +1,111 @@
-/* ARCADIA - Ranking */
+/* ================================
+   ARCADIA - RANKING (v1.0 UI)
+   Pódio com brilho metálico, linhas com hover
+   ================================ */
+
 .ranking-main { padding: 2rem 0 4rem; }
-.ranking-main h1 { font-size: 2rem; margin-bottom: .4rem; }
-.accent { color: var(--primary); }
+
+.ranking-main h1 {
+    font-size: 2.2rem;
+    margin-bottom: .4rem;
+    background: linear-gradient(90deg, var(--text), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.accent { color: var(--primary); -webkit-text-fill-color: initial; }
+
 .ranking-main > .muted { margin-bottom: 1.5rem; }
 
 .ranking-card {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 1.2rem; max-width: 720px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    max-width: 720px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
 }
+
+/* filete de luz no topo */
+.ranking-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, .6), transparent);
+}
+
 .ranking-header, .ranking-row {
-    display: grid; grid-template-columns: 50px 1fr 100px 130px;
-    gap: .8rem; align-items: center; padding: .6rem .8rem;
+    display: grid;
+    grid-template-columns: 50px 1fr 100px 130px;
+    gap: .8rem;
+    align-items: center;
+    padding: .6rem .8rem;
 }
+
 .ranking-header {
-    font-size: .75rem; text-transform: uppercase; letter-spacing: .1em;
-    color: var(--text-secondary); border-bottom: 1px solid var(--border);
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border);
 }
-.ranking-row { border-bottom: 1px solid rgba(255,255,255,.04); }
+
+.ranking-row {
+    border-bottom: 1px solid rgba(255, 255, 255, .04);
+    border-radius: 10px;
+    transition: background .2s ease, transform .15s var(--ease-spring);
+}
+
+.ranking-row:hover {
+    background: rgba(139, 92, 246, .06);
+    transform: translateX(3px);
+}
+
 .ranking-row:last-child { border-bottom: none; }
-.ranking-row .pos { font-weight: 700; color: var(--text-secondary); }
-.ranking-row.top1 .pos { color: #ffd700; }
-.ranking-row.top2 .pos { color: #c0c0c0; }
-.ranking-row.top3 .pos { color: #cd7f32; }
-.ranking-row .player { font-weight: 600; }
-.ranking-row .games { color: var(--text-secondary); font-size: .9rem; }
-.ranking-row .profit { font-weight: 700; text-align: right; }
+
+.ranking-row .pos {
+    font-weight: 700;
+    color: var(--text-secondary);
+}
+
+/* pódio com brilho */
+.ranking-row.top1 .pos {
+    color: #ffd700;
+    text-shadow: 0 0 12px rgba(255, 215, 0, .5);
+}
+
+.ranking-row.top2 .pos {
+    color: #c0c0c0;
+    text-shadow: 0 0 10px rgba(192, 192, 192, .4);
+}
+
+.ranking-row.top3 .pos {
+    color: #cd7f32;
+    text-shadow: 0 0 10px rgba(205, 127, 50, .4);
+}
+
+.ranking-row.top1 {
+    background: linear-gradient(90deg, rgba(255, 215, 0, .06), transparent);
+}
+
+.ranking-row.player { font-weight: 600; }
+
+.ranking-row .games {
+    color: var(--text-secondary);
+    font-size: .9rem;
+}
+
+.ranking-row .profit {
+    font-weight: 700;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
 .ranking-row .profit.positive { color: var(--success); }
 .ranking-row .profit.negative { color: var(--danger); }
