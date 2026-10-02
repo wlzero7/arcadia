@@ -1,6 +1,7 @@
 // ========================================
 // ARCADIA - HORSE RACING (v0.9) — multiplayer
 // Corrida visual: cavalos com nomes, apostas no pote da sala
+// v1.0.2: getWallet("coop") nas apostas (carteira garantida) + payouts com adjustBalance
 // ========================================
 
 const pool = require("../config/database");
@@ -105,34 +106,28 @@ function setupRacing(io) {
         socket.on("race:bet", async (data, cb) => {
             try {
                 const race = races.get(socket.data.raceCode);
-                if (!race || race.phase !== "betting") return cb && cb({ ok: false, error: "Apostas fechadas." });
+                if (!race) return cb && cb({ ok: false, error: "Entre em uma corrida primeiro." });
+                if (race.phase !== "betting") return cb && cb({ ok: false, error: "Apostas fechadas — a corrida já começou. Aposte antes do host iniciar!" });
 
                 const horseId = Number(data && data.horseId);
                 const amount = Math.floor(Number(data && data.amount));
                 if (!race.horses.some((h) => h.id === horseId)) return cb && cb({ ok: false, error: "Cavalo inválido." });
                 if (!Number.isFinite(amount) || amount < 10) return cb && cb({ ok: false, error: "Aposta mínima: 10 AC." });
 
-                const wallet = pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'coop'", [socket.userId])
-                    || (() => {
-                        pool.db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'coop', 1000000)", [socket.userId]);
-                        return pool.db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = 'coop'", [socket.userId]);
-                    })();
-
+                // v1.0.2: getWallet garante a carteira COOP (cria com 1M se não existir)
+                const wallet = await pool.getWallet(socket.userId, "coop");
                 if (wallet.balance < amount) return cb && cb({ ok: false, error: "Saldo coop insuficiente." });
 
-                // ajusta saldo (transação síncrona)
-                pool.db.run("UPDATE wallets SET balance = balance - ?, updated_at = datetime('now') WHERE id = ?", [amount, wallet.id]);
-                pool.db.run(
-                    `INSERT INTO transactions (wallet_id, kind, amount, balance_after, ref_type, ref_id)
-                     VALUES (?, 'room_stake', ?, ?, 'race', ?)`,
-                    [wallet.id, -amount, wallet.balance - amount, race.code]
-                );
-
-                // re-aposta substitui anterior (devolve)
+                // re-aposta substitui anterior (devolve o valor antigo primeiro)
                 if (race.bets.has(socket.userId)) {
-                    race.pot -= race.bets.get(socket.userId).amount;
+                    const old = race.bets.get(socket.userId);
+                    await pool.adjustBalance(wallet.id, old.amount, "room_refund", "race", race.code);
+                    race.pot -= old.amount;
                 }
-                race.bets.set(socket.userId, { horseId: horseId, amount, username: socket.username });
+
+                await pool.adjustBalance(wallet.id, -amount, "room_stake", "race", race.code);
+
+                race.bets.set(socket.userId, { horseId, amount, username: socket.username });
                 race.pot += amount;
 
                 io.to(`race:${race.code}`).emit("race:state", raceState(race));
@@ -178,18 +173,15 @@ function setupRacing(io) {
             const odds = payoutMultipliers(race);
             const winnerOdds = odds.find((o) => o.id === winner.id).mult;
 
-            // paga apostas vencedoras da carteira coop
+            // paga apostas vencedoras da carteira coop (com log de transação)
             const payouts = [];
             for (const [uid, b] of race.bets) {
                 if (b.horseId === winner.id) {
                     const payout = Math.floor(b.amount * winnerOdds);
-                    pool.db.run("UPDATE wallets SET balance = balance + ? WHERE user_id = ? AND kind = 'coop'", [payout, uid]);
-                    const w = pool.db.get("SELECT balance FROM wallets WHERE user_id = ? AND kind = 'coop'", [uid]);
-                    pool.db.run(
-                        `INSERT INTO transactions (wallet_id, kind, amount, balance_after, ref_type, ref_id)
-                         SELECT id, 'room_payout', ?, ?, 'race', ? FROM wallets WHERE user_id = ? AND kind = 'coop'`,
-                        [payout, w.balance, race.code, uid]
-                    );
+                    const w = await pool.get("SELECT id FROM wallets WHERE user_id = ? AND kind = 'coop'", [uid]);
+                    if (w) {
+                        await pool.adjustBalance(w.id, payout, "room_payout", "race", race.code);
+                    }
                     payouts.push({ userId: uid, username: b.username, payout });
                 }
             }
