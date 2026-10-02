@@ -85,3 +85,72 @@
 .auction-slot .as-lead.opp { color: var(--danger); }
 .auction-bid-row { display: flex; gap: .5rem; align-items: center; }
 .auction-bid-row input { width: 110px; padding: .5rem .7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+
+/* ---------- LOBBY v1.1: caixa de código estilizada ---------- */
+
+.lobby-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+    max-width: 560px;
+    margin: 0 auto;
+}
+
+.join-row {
+    display: flex;
+    gap: .5rem;
+    align-items: center;
+}
+
+.duel-code-input {
+    width: 140px;
+    padding: .7rem .9rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    border-radius: var(--radius-sm);
+    border: 2px dashed var(--border);
+    background: var(--background);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.duel-code-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+/* ---------- TRUNFOS no duelo (v1.1) ---------- */
+
+.trump-row {
+    display: flex;
+    gap: .6rem;
+    align-items: center;
+    margin-top: .8rem;
+    justify-content: center;
+}
+
+.trump-row label {
+    font-size: .8rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+}
+
+.trump-row select {
+    padding: .5rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    cursor: pointer;
+}
