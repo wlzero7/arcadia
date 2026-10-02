@@ -1,15 +1,15 @@
 // ========================================
 // ARCADIA DICE
-// Client-side prototype - v0.1
+// Client-side - v1.0.2
+// Fix: validação de saldo removida do cliente — o SERVIDOR é a fonte
+// da verdade e rejeita com a mensagem certa. O cache local podia estar
+// travado em 0 e bloquear apostas com "Saldo insuficiente" fantasma.
 // ========================================
 
 
 // ========================================
 // GAME STATE
 // ========================================
-
-let balance =
-    ArcadiaWallet.getCached();
 
 let selectedNumber = null;
 
@@ -47,7 +47,6 @@ const rollButton =
 
 const numberButtons =
     document.querySelectorAll(".number-button");
-
 const quickBetButtons =
     document.querySelectorAll(".quick-bets button");
 
@@ -72,9 +71,7 @@ const clearHistoryButton =
 // ========================================
 
 function formatArcCoins(value) {
-
     return ArcadiaWallet.format(value);
-
 }
 
 
@@ -83,29 +80,21 @@ function formatArcCoins(value) {
 // ========================================
 
 numberButtons.forEach((button) => {
-
     button.addEventListener("click", () => {
-
         selectedNumber =
             Number(button.dataset.number);
-
 
         numberButtons.forEach((item) => {
             item.classList.remove("selected");
         });
 
-
         button.classList.add("selected");
-
-
         gameMessage.textContent =
             `Número ${selectedNumber} selecionado.`;
 
         gameMessage.style.color =
             "var(--text-secondary)";
-
     });
-
 });
 
 
@@ -114,14 +103,10 @@ numberButtons.forEach((button) => {
 // ========================================
 
 quickBetButtons.forEach((button) => {
-
     button.addEventListener("click", () => {
-
         betInput.value =
             Number(button.dataset.bet);
-
     });
-
 });
 
 
@@ -130,64 +115,42 @@ quickBetButtons.forEach((button) => {
 // ========================================
 
 function generateDiceResult() {
-
     return Math.floor(
         Math.random() * 6
     ) + 1;
-
 }
 
 
 // ========================================
 // VALIDATION
+// (v1.0.2: sem check de saldo — o servidor valida contra o banco real)
 // ========================================
 
 function validateBet(bet) {
-
     if (selectedNumber === null) {
-
         return "Escolha um número entre 1 e 6.";
-
     }
 
-
     if (!Number.isFinite(bet)) {
-
         return "Digite um valor válido.";
-
     }
 
     if (!Number.isInteger(bet)) {
-
         return "A aposta deve utilizar ArcCoins inteiros.";
-
     }
 
     if (bet < 10) {
-
         return "A aposta mínima é 10 AC.";
-
     }
-
-
-    if (bet > balance) {
-
-        return "Saldo insuficiente.";
-
-    }
-
 
     return null;
-
 }
 
 
 // ========================================
 // PLAY
 // ========================================
-
 async function playDice() {
-
     if (isRolling) {
         return;
     }
@@ -219,7 +182,6 @@ async function playDice() {
     try {
         // Toda a aleatoriedade acontece NO SERVIDOR
         const data = await ArcadiaAPI.play("dice", bet, { number: selectedNumber });
-
         await new Promise((r) => setTimeout(r, 900));
         clearInterval(animationInterval);
         diceElement.classList.remove("rolling");
@@ -240,8 +202,7 @@ async function playDice() {
             gameMessage.style.color = "var(--danger)";
         }
 
-        balance = data.balance;
-        ArcadiaWallet.setCached(balance);
+        ArcadiaWallet.setCached(data.balance);
         updateBalance();
         addHistory({ won, bet, balanceChange, selectedNumber, result });
     } catch (err) {
@@ -257,18 +218,19 @@ async function playDice() {
 
 
 function updateBalance() {
+    // v1.0.2: sempre lê o cache VIVO (o wallet.js v1.0.4 sincroniza sozinho)
+    const current = ArcadiaWallet.getCached();
 
     // nunca quebra se o elemento não existir na página
     if (balanceElement) {
-        balanceElement.textContent = formatArcCoins(balance);
+        balanceElement.textContent = formatArcCoins(current);
     }
 
     // mantém o saldo do header sincronizado também
     const headerWallet = document.getElementById("walletBalance");
     if (headerWallet) {
-        headerWallet.textContent = formatArcCoins(balance);
+        headerWallet.textContent = formatArcCoins(current);
     }
-
 }
 
 
@@ -277,7 +239,6 @@ function updateBalance() {
 // ========================================
 
 function updateStatistics() {
-
     totalGamesElement.textContent =
         totalGames;
 
@@ -286,7 +247,6 @@ function updateStatistics() {
 
     totalLossesElement.textContent =
         totalLosses;
-
 }
 
 
@@ -295,113 +255,45 @@ function updateStatistics() {
 // ========================================
 
 function addHistory(game) {
-
     gameHistory.unshift(game);
+    if (gameHistory.length > 50) gameHistory.pop();
 
+    if (game.won) totalWins++;
+    else totalLosses++;
+    totalGames++;
 
-    // Limita o histórico visual
-
-    if (gameHistory.length > 10) {
-
-        gameHistory.pop();
-
-    }
-
-
+    updateStatistics();
     renderHistory();
-
 }
 
 
 function renderHistory() {
+    if (!historyList) return;
 
     historyList.innerHTML = "";
 
-
     if (gameHistory.length === 0) {
-
-        historyList.innerHTML =
-            `
-                <p class="empty-history">
-                    Nenhuma partida realizada.
-                </p>
-            `;
-
+        const empty = document.createElement("p");
+        empty.className = "muted";
+        empty.textContent = "Nenhuma partida realizada.";
+        historyList.appendChild(empty);
         return;
     }
 
-
     gameHistory.forEach((game) => {
-
-        const historyItem =
-            document.createElement("div");
-
-
-        historyItem.className =
-            `history-item ${
-                game.won
-                    ? "win"
-                    : "loss"
-            }`;
-
-
-        historyItem.innerHTML =
-            `
-                <div>
-
-                    <span>
-                        Escolha / Resultado
-                    </span>
-
-                    <strong>
-                        ${game.selectedNumber}
-                        →
-                        ${game.result}
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        Aposta
-                    </span>
-
-                    <strong>
-                        ${formatArcCoins(game.bet)}
-                    </strong>
-
-                </div>
-
-
-                <div>
-
-                    <span>
-                        Resultado
-                    </span>
-
-                    <strong>
-                        ${
-                            game.balanceChange > 0
-                                ? "+"
-                                : ""
-                        }
-                        ${formatArcCoins(
-                            game.balanceChange
-                        )}
-                    </strong>
-
-                </div>
-            `;
-
-
-        historyList.appendChild(
-            historyItem
-        );
-
+        const historyItem = document.createElement("div");
+        historyItem.className = "history-item " + (game.won ? "win" : "loss");
+        historyItem.innerHTML = `
+            <div>
+                <span class="history-dice">🎲 ${game.result}</span>
+                <span class="muted">escolheu ${game.selectedNumber}</span>
+            </div>
+            <strong class="${game.won ? "text-success" : "text-danger"}">
+                ${game.balanceChange > 0 ? "+" : ""}${formatArcCoins(game.balanceChange)}
+            </strong>
+        `;
+        historyList.appendChild(historyItem);
     });
-
 }
 
 
@@ -410,26 +302,23 @@ function renderHistory() {
 // ========================================
 
 function updateInterface() {
-
     updateBalance();
-
     updateStatistics();
-
 }
 
 
 // ========================================
 // CLEAR HISTORY
 // ========================================
-
 clearHistoryButton.addEventListener(
     "click",
     () => {
-
         gameHistory = [];
-
+        totalGames = 0;
+        totalWins = 0;
+        totalLosses = 0;
         renderHistory();
-
+        updateStatistics();
     }
 );
 
@@ -452,8 +341,8 @@ rollButton.addEventListener(
     if (ArcadiaAPI.isLoggedIn()) {
         try {
             await ArcadiaWallet.refresh();
-            balance = ArcadiaWallet.getCached();
         } catch (_) {}
     }
     updateInterface();
+    renderHistory();
 })();
