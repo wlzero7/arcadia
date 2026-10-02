@@ -1,64 +1,267 @@
-/* ARCADIA - Corrida de Cavalos */
+/* ================================
+   ARCADIA - CORRIDA DE CAVALOS (v1.0 UI)
+   Pista com atmosfera, cavalos animados, vitória com glow
+   ================================ */
+
 .race-main { padding: 2rem 0 4rem; }
-.race-main h1 { font-size: 2rem; margin-bottom: .4rem; }
-.accent { color: var(--primary); }
+
+.race-main h1 {
+    font-size: 2.2rem;
+    margin-bottom: .4rem;
+    background: linear-gradient(90deg, var(--text), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.accent { color: var(--primary); -webkit-text-fill-color: initial; }
+
 .race-main > .muted { margin-bottom: 1.5rem; }
 
+/* ---------- LOBBY ---------- */
+
 .race-lobby {
-    display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 16px; padding: 1.2rem; margin-bottom: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    flex-wrap: wrap;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.2rem;
+    margin-bottom: 1.5rem;
+    box-shadow: var(--shadow-card);
 }
+
 .race-join { display: flex; gap: .5rem; }
+
 .race-join input {
-    width: 120px; padding: .6rem; text-transform: uppercase; letter-spacing: .2em;
-    border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text);
+    width: 120px;
+    padding: .6rem;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    font-weight: 700;
+    transition: border-color .2s ease, box-shadow .2s ease;
 }
+
+.race-join input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+/* ---------- PISTA ---------- */
 
 .race-track-wrap {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 20px; padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
 }
-.race-header { display: flex; gap: 1.2rem; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; }
+
+.race-header {
+    display: flex;
+    gap: 1.2rem;
+    align-items: center;
+    margin-bottom: 1.2rem;
+    flex-wrap: wrap;
+}
 
 .race-track {
-    display: flex; flex-direction: column; gap: .5rem;
-    background: linear-gradient(180deg, #1e3a1e, #162816);
-    border-radius: 14px; padding: 1rem; border: 2px solid #78350f;
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(250, 204, 21, .06), transparent 60%),
+        linear-gradient(180deg, #1e3a1e, #162816);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    border: 2px solid #78350f;
+    box-shadow: inset 0 0 40px rgba(0, 0, 0, .4);
     margin-bottom: 1.2rem;
 }
+
 .race-lane {
-    display: flex; align-items: center; gap: .6rem;
-    border-bottom: 2px dashed rgba(255,255,255,.12);
-    padding: .35rem 0; position: relative; min-height: 52px;
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    border-bottom: 2px dashed rgba(255, 255, 255, .12);
+    padding: .35rem 0;
+    position: relative;
+    min-height: 52px;
+    border-radius: 10px;
+    transition: background .3s ease;
 }
+
 .race-lane:last-child { border-bottom: none; }
+
 .lane-horse {
-    font-size: 1.8rem; transition: left .4s linear; position: relative;
-    display: flex; align-items: center; gap: .4rem; min-width: 150px;
+    font-size: 1.8rem;
+    transition: left .4s linear;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    min-width: 150px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .5));
 }
-.lane-name { font-size: .85rem; font-weight: 700; color: #fde68a; white-space: nowrap; }
-.lane-odds { font-size: .75rem; color: rgba(255,255,255,.6); }
-.lane-bar { flex: 1; height: 10px; background: rgba(0,0,0,.35); border-radius: 999px; overflow: hidden; }
-.lane-bar div { height: 100%; background: linear-gradient(90deg, #fbbf24, #f59e0b); border-radius: 999px; transition: width .4s linear; }
-.race-lane.selected { background: rgba(124,58,237,.18); border-radius: 10px; }
+
+/* galope: balanço sutil constante */
+.race-lane .lane-horse {
+    animation: gallop 1s ease-in-out infinite;
+}
+
+@keyframes gallop {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    30% { transform: translateY(-3px) rotate(-3deg); }
+    60% { transform: translateY(1px) rotate(2deg); }
+}
+
+.lane-name {
+    font-size: .85rem;
+    font-weight: 700;
+    color: #fde68a;
+    white-space: nowrap;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, .6);
+}
+
+.lane-odds { font-size: .75rem; color: rgba(255, 255, 255, .6); }
+
+.lane-bar {
+    flex: 1;
+    height: 10px;
+    background: rgba(0, 0, 0, .35);
+    border-radius: 999px;
+    overflow: hidden;
+}
+
+.lane-bar div {
+    height: 100%;
+    background: linear-gradient(90deg, #fbbf24, #f59e0b);
+    border-radius: 999px;
+    box-shadow: 0 0 8px rgba(251, 191, 36, .5);
+    transition: width .4s linear;
+}
+
+.race-lane.selected {
+    background: rgba(124, 58, 237, .18);
+    border-radius: 10px;
+    box-shadow: inset 0 0 0 1px rgba(139, 92, 246, .4);
+}
+
 .lane-pick { margin-left: auto; }
+
 .lane-pick button {
-    padding: .25rem .7rem; border-radius: 8px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); cursor: pointer; font-size: .8rem;
+    padding: .25rem .7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: border-color .2s ease, background .2s ease, transform .15s var(--ease-spring);
 }
-.lane-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.25); }
-.race-lane.winner { background: rgba(250,204,21,.15); border-radius: 10px; }
+
+.lane-pick button:hover {
+    border-color: var(--primary);
+    transform: translateY(-1px);
+}
+
+.lane-pick button.selected {
+    border-color: var(--primary);
+    background: rgba(124, 58, 237, .25);
+    box-shadow: 0 0 12px rgba(139, 92, 246, .3);
+}
+
+/* ---------- VITÓRIA ---------- */
+
+.race-lane.winner {
+    background: rgba(250, 204, 21, .15);
+    border-radius: 10px;
+    animation: winnerGlow 1.2s ease-in-out infinite;
+}
+
+@keyframes winnerGlow {
+    0%, 100% { box-shadow: inset 0 0 0 1px rgba(250, 204, 21, .4); }
+    50% { box-shadow: inset 0 0 0 1px rgba(250, 204, 21, .8), 0 0 20px rgba(250, 204, 21, .25); }
+}
+
+.race-lane.winner .lane-horse {
+    animation: winnerBounce .5s var(--ease-spring) infinite;
+}
+
+@keyframes winnerBounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+}
+
+/* ---------- APOSTAS ---------- */
 
 .race-bets h3 { font-size: 1rem; margin-bottom: .6rem; }
-.my-bets { display: flex; flex-direction: column; gap: .3rem; margin-bottom: .8rem; }
-.bet-entry { font-size: .85rem; padding: .4rem .8rem; background: var(--bg); border-radius: 8px; display: flex; justify-content: space-between; }
+
+.my-bets {
+    display: flex;
+    flex-direction: column;
+    gap: .3rem;
+    margin-bottom: .8rem;
+}
+
+.bet-entry {
+    font-size: .85rem;
+    padding: .4rem .8rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    display: flex;
+    justify-content: space-between;
+    animation: itemIn .3s var(--ease-spring) both;
+}
+
+@keyframes itemIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: none; }
+}
+
 .bet-row { display: flex; gap: .5rem; }
-.bet-row input { width: 130px; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+
+.bet-row input {
+    width: 130px;
+    padding: .55rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.bet-row input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
 .hidden { display: none !important; }
 
+/* ---------- RESULTADO ---------- */
+
 .race-results {
-    margin-top: 1rem; padding: 1rem; border-radius: 12px;
-    background: rgba(250,204,21,.08); border: 1px solid rgba(250,204,21,.4);
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: var(--radius-md);
+    background: rgba(250, 204, 21, .08);
+    border: 1px solid rgba(250, 204, 21, .4);
     font-weight: 700;
+    text-align: center;
+    animation: resultIn .4s var(--ease-spring) both;
+}
+
+@keyframes resultIn {
+    from { opacity: 0; transform: scale(.95) translateY(8px); }
+    to { opacity: 1; transform: none; }
 }
