@@ -1,6 +1,6 @@
 // ========================================
 // ARCADIA ROOMS — cliente multiplayer (Socket.IO)
-// v1.0: jogo Slots disponível nas salas coop
+// v1.0: jogo Slots disponível nas salas coop (com trunfos e drop de cartas)
 // ========================================
 
 const Rooms = (() => {
@@ -309,6 +309,13 @@ const Rooms = (() => {
                 : `🎰 ${reelsText} — ${round.playerName} perdeu ${ArcadiaWallet.format(round.wager)}`;
             const reelsEl = $("mpSlotReels");
             if (reelsEl) reelsEl.textContent = reelsText;
+            // notas de trunfo usados na rodada
+            (round.notes || []).forEach((n) => toastMsg(n));
+            // carta ganha no drop de 50%
+            if (round.card) {
+                toastMsg(`🎁 ${round.playerName} ganhou a carta ${round.card.name}!`);
+                if (Sfx.achievement) Sfx.achievement();
+            }
         }
     }
 
