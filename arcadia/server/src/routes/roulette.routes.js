@@ -1,6 +1,7 @@
 // ========================================
 // ARCADIA - ROLETA EUROPEIA (v0.8)
 // 37 casas (0-36), pagamentos clássicos, RTP justo
+// v1.0.2: getWallet("solo") — query crua podia pegar a carteira coop/duel com 0
 // ========================================
 
 const express = require("express");
@@ -33,8 +34,9 @@ router.post("/roulette/spin", authenticate, async (req, res) => {
             totalWager += amount;
         }
 
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet || wallet.balance < totalWager) {
+        // v1.0.2: getWallet garante a carteira SOLO correta (cria com 1M se não existir)
+        const wallet = await pool.getWallet(req.user.id, "solo");
+        if (wallet.balance < totalWager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente para o total apostado." });
         }
 
@@ -46,7 +48,6 @@ router.post("/roulette/spin", authenticate, async (req, res) => {
 
         for (const b of bets) {
             let mult = 0;
-            let won = false;
 
             switch (b.type) {
                 case "straight":
