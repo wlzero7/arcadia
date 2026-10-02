@@ -1,6 +1,7 @@
 // ========================================
 // ARCADIA - BLACKJACK (v0.8) — estado no servidor
 // Baralho de 52 cartas, dealer para no 17, blackjack paga 3:2
+// v1.0.2: getWallet("solo") no start (query crua podia pegar a carteira errada)
 // ========================================
 
 const express = require("express");
@@ -83,8 +84,9 @@ router.post("/blackjack/start", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet || wallet.balance < wager) {
+        // v1.0.2: getWallet garante a carteira SOLO correta (cria com 1M se não existir)
+        const wallet = await pool.getWallet(req.user.id, "solo");
+        if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
         }
 
