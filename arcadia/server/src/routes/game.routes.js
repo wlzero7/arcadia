@@ -1,5 +1,7 @@
 // ========================================
 // ARCADIA - GAME ROUTES (jogos solo, server-side)
+// v1.0.1: fix do dado — cliente envia { number: X }, servidor agora lê o objeto
+// (antes: Number({number:1}) = NaN → roll === NaN sempre falso → nunca ganhava)
 // ========================================
 
 const express = require("express");
@@ -15,14 +17,19 @@ const router = express.Router();
 // ========================================
 
 const GAMES = {
-    // Dados: aposta num número 1-6. Acerto paga 5x (edge da casa ~16.7%... sem casa!
-    // Cassino FREE: RTP 100% — acerto paga 6x justo. A graça é entre amigos.
+    // Dados: aposta num número 1-6. Acerto paga 6x justo. A graça é entre amigos.
     dice: {
         minBet: 10,
         play(wager, choice) {
-            const n = choice ? Number(choice) : 1 + Math.floor(Math.random() * 6);
+            // aceita { number: X } (cliente atual), número direto (legado) ou null
+            let n = null;
+            if (choice && typeof choice === "object" && choice.number != null) {
+                n = Number(choice.number);
+            } else if (choice != null && Number.isFinite(Number(choice))) {
+                n = Number(choice);
+            }
             const roll = 1 + Math.floor(Math.random() * 6);
-            const win = roll === n;
+            const win = n !== null && Number.isInteger(n) && n >= 1 && n <= 6 && roll === n;
             return {
                 outcome: win ? "win" : "loss",
                 multiplier: win ? 6 : 0,
@@ -36,7 +43,9 @@ const GAMES = {
     coinflip: {
         minBet: 10,
         play(wager, choice) {
-            const side = choice === "tails" ? "tails" : "heads";
+            // aceita { side: "heads" } (cliente atual) ou string direta (legado)
+            const raw = choice && choice.side ? String(choice.side) : String(choice || "");
+            const side = raw === "tails" ? "tails" : "heads";
             const flip = Math.random() < 0.5 ? "heads" : "tails";
             const win = flip === side;
             return {
