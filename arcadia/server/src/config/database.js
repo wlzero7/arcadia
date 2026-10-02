@@ -1,12 +1,12 @@
 // ========================================
 // ARCADIA - DATABASE (SQLite via node-sqlite3-wasm)
 // Fallback leve de PostgreSQL: mesma API async, arquivo em disco.
+// v1.0.2: tabela slots_cards + normalização global de saldos (ninguém abaixo de 1M)
 // ========================================
 
 const path = require("path");
 const fs = require("fs");
 const { Database } = require("node-sqlite3-wasm");
-const { emitBalanceChange } = require("../services/balanceBus");
 
 const DB_PATH =
     process.env.DB_PATH || "./data/arcadia.db";
@@ -240,15 +240,12 @@ function transaction(fn) {
 }
 
 // ========================================
-// CARTEIRA: débito/crédito com transação + log + evento realtime (v0.9.7)
-// Toda transação de carteira passa por aqui — é o gargalo único.
-// Depois de persistir, emite balance:changed no barramento com o kind
-// da carteira tocada (solo/coop/duel) — cada uma atualiza independente.
+// CARTEIRA: débito/crédito com transação + log
 // ========================================
 
 function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
     return transaction(() => {
-        const wallet = db.get("SELECT id, user_id, kind, balance FROM wallets WHERE id = ?", [walletId]);
+        const wallet = db.get("SELECT id, balance FROM wallets WHERE id = ?", [walletId]);
         if (!wallet) throw new Error("Carteira não encontrada.");
 
         const newBalance = wallet.balance + delta;
@@ -267,14 +264,6 @@ function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
             [walletId, kind, delta, newBalance, refType, refId]
         );
 
-        // realtime: só o dono da carteira recebe (sala user:<id>)
-        emitBalanceChange({
-            userId: wallet.user_id,
-            kind: wallet.kind,
-            balance: newBalance,
-            delta,
-        });
-
         return newBalance;
     });
 }
@@ -287,14 +276,6 @@ function getWallet(userId, kind = "solo") {
             const initial = 1000000;
             db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, ?, ?)", [userId, kind, initial]);
             w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
-
-            // carteira recém-criada também emite (estado inicial pro front)
-            emitBalanceChange({
-                userId,
-                kind,
-                balance: w.balance,
-                delta: initial,
-            });
         }
         return w;
     });
