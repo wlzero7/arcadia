@@ -1,7 +1,9 @@
 // ========================================
 // ARCADIA - GAME ROUTES (jogos solo, server-side)
-// v1.0.2: fix do dado ({ number: X }) + getWallet("solo") em TODOS os jogos
-// (a query crua sem kind podia pegar a carteira coop/duel com 0 → "Saldo insuficiente")
+// v1.0.3: restaura o destructuring do import de progression.routes
+// (a linha tinha virado só require(...) solto → checkGameAchievements
+// undefined → TypeError → 500 "Erro ao processar aposta" em TODA aposta)
+// v1.0.2: fix do dado ({ number: X }) + getWallet("solo") em todos os jogos
 // ========================================
 
 const express = require("express");
@@ -127,7 +129,7 @@ router.post("/:game/play", authenticate, async (req, res) => {
     }
 
     try {
-        // v1.0.2: getWallet garante a carteira SOLO correta (cria com 1M se não existir)
+        // getWallet garante a carteira SOLO correta (cria com 1M se não existir)
         const wallet = await pool.getWallet(req.user.id, "solo");
         if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
@@ -147,7 +149,7 @@ router.post("/:game/play", authenticate, async (req, res) => {
             [req.user.id, gameName, wager, result.multiplier, result.payout, result.outcome, JSON.stringify(result.detail)]
         );
 
-        // v0.9: XP + conquistas + missões
+        // XP + conquistas + missões
         const levelInfo = grantXP(req.user.id, 10 + Math.floor(wager / 100));
         const unlocked = checkGameAchievements(req.user.id, { game: gameName, outcome: result.outcome, multiplier: result.multiplier, wager, detail: result.detail });
         trackGameActivity(req.user.id, { game: gameName, outcome: result.outcome, wager });
@@ -199,7 +201,7 @@ router.post("/mines/start", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        // v1.0.2: getWallet garante a carteira SOLO correta
+        // getWallet garante a carteira SOLO correta
         const wallet = await pool.getWallet(req.user.id, "solo");
         if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
@@ -346,7 +348,7 @@ router.post("/crash/start", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        // v1.0.2: getWallet garante a carteira SOLO correta
+        // getWallet garante a carteira SOLO correta
         const wallet = await pool.getWallet(req.user.id, "solo");
         if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
@@ -728,7 +730,7 @@ router.post("/plinko/drop", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        // v1.0.2: getWallet garante a carteira SOLO correta
+        // getWallet garante a carteira SOLO correta
         const wallet = await pool.getWallet(req.user.id, "solo");
         if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
