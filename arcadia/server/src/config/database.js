@@ -170,6 +170,13 @@ db.exec(`
         SELECT id, 'duel', 1000 FROM users;
 `);
 
+// Upgrade retroativo de saldos antigos (10k/1k → 1M) — config do William
+db.exec(`
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'solo' AND balance = 10000;
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'coop' AND balance = 10000;
+    UPDATE wallets SET balance = 1000000 WHERE kind = 'duel' AND balance = 1000;
+`);
+
 // ========================================
 // HELPERS (mesma assinatura do pg: err-first)
 // ========================================
@@ -262,12 +269,12 @@ function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
     });
 }
 
-// Carteira por tipo (solo | coop | duel) — cria se não existir
+// Carteira por tipo (solo | coop | duel) — cria se não existir — 1.000.000 AC (config do William)
 function getWallet(userId, kind = "solo") {
     return transaction(() => {
         let w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
         if (!w) {
-            const initial = kind === "duel" ? 1000 : 10000;
+            const initial = 1000000;
             db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, ?, ?)", [userId, kind, initial]);
             w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
 
