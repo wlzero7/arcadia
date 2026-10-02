@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Slots - Arcadia Social Casino Simulator">
+    <title>Slots — Arcadia</title>
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/slots.css">
+</head>
+<body>
+
+    <header class="header">
+        <nav class="navbar container">
+            <a href="index.html" class="logo">🎰 Arcadia</a>
+            <ul class="nav-links">
+                <li><a href="index.html">Início</a></li>
+                <li><a href="games.html" class="active">Jogos</a></li>
+                <li><a href="rooms.html">Salas</a></li>
+                <li><a href="ranking.html">Ranking</a></li>
+                <li><a href="perfil.html">Perfil</a></li>
+                <li><a href="sobre.html">Sobre</a></li>
+            </ul>
+            <div class="nav-actions">
+                <button class="sfx-toggle" id="sfxToggle" title="Sons">🔊</button>
+                <div class="home-wallet"><strong id="walletBalance">—</strong></div>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container slots-main">
+        <h1>🎰 <span class="accent">Slots</span></h1>
+        <p class="muted">Gire a máquina, colecione trunfos e dispute o prêmio máximo de 100x!</p>
+
+        <div class="slots-layout">
+
+            <!-- CONTROLES -->
+            <section class="slots-controls">
+                <div class="field">
+                    <label>Aposta (AC)</label>
+                    <input type="number" id="betAmount" value="100" min="10">
+                </div>
+                <div class="field">
+                    <label>Trunfo (opcional — consome a carta)</label>
+                    <select id="trumpSelect">
+                        <option value="">— Nenhum —</option>
+                    </select>
+                </div>
+                <button class="btn btn-primary btn-block" id="spinBtn">🎰 GIRAR</button>
+                <div class="game-result" id="gameMessage"></div>
+
+                <div class="slots-info">
+                    <div><span>Último prêmio</span><strong id="lastPayout">—</strong></div>
+                    <div><span>Cartas na coleção</span><strong id="cardCount">0</strong></div>
+                </div>
+            </section>
+
+            <!-- MÁQUINA -->
+            <section class="slots-machine-wrap">
+                <div class="slots-machine" id="slotsMachine">
+                    <div class="machine-top">★ ARCADIA SLOTS ★</div>
+                    <div class="reels">
+                        <div class="reel" id="reel1">❔</div>
+                        <div class="reel" id="reel2">❔</div>
+                        <div class="reel" id="reel3">❔</div>
+                    </div>
+                    <div class="machine-lights" id="machineLights"></div>
+                </div>
+                <div class="slots-notes" id="slotsNotes"></div>
+
+                <div class="paytable">
+                    <h3>💰 Prêmios (trinca)</h3>
+                    <div class="paytable-row"><span>🍒🍒🍒</span><strong>2x</strong></div>
+                    <div class="paytable-row"><span>🍋🍋🍋</span><strong>3x</strong></div>
+                    <div class="paytable-row"><span>🍊🍊🍊</span><strong>5x</strong></div>
+                    <div class="paytable-row"><span>🔔🔔🔔</span><strong>8x</strong></div>
+                    <div class="paytable-row"><span>⭐⭐⭐</span><strong>15x</strong></div>
+                    <div class="paytable-row"><span>💎💎💎</span><strong>40x</strong></div>
+                    <div class="paytable-row jackpot"><span>7️⃣7️⃣7️⃣</span><strong>100x 💥</strong></div>
+                    <div class="paytable-row"><span>Par qualquer</span><strong>1.5x</strong></div>
+                </div>
+            </section>
+
+            <!-- INVENTÁRIO -->
+            <aside class="slots-inventory">
+                <div class="inv-header">
+                    <div>
+                        <span>COLEÇÃO</span>
+                        <h2>🎒 Trunfos</h2>
+                    </div>
+                </div>
+                <p class="muted small">50% de chance de ganhar uma carta a cada giro. Usar consome a carta.</p>
+                <div class="cards-list" id="cardsList">
+                    <p class="empty-history">Nenhuma carta ainda. Gire a máquina!</p>
+                </div>
+            </aside>
+
+        </div>
+    </main>
+
+    <script src="js/sfx.js"></script>
+    <script src="js/api.js"></script>
+    <script src="https://cdn.socket.io/4.8.4/socket.io.min.js"></script>
+    <script src="js/wallet.js"></script>
+    <script src="js/slots.js"></script>
+</body>
+</html>
