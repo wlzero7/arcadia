@@ -6,6 +6,7 @@
 const path = require("path");
 const fs = require("fs");
 const { Database } = require("node-sqlite3-wasm");
+const { emitBalanceChange } = require("../services/balanceBus");
 
 const DB_PATH =
     process.env.DB_PATH || "./data/arcadia.db";
@@ -161,21 +162,12 @@ if (!walletCols.includes("kind")) {
     `);
 }
 
-// Garante carteiras solo/coop/duel para todos os usuários — 1.000.000 AC (config do William)
+// Garante carteiras solo/duel para todos os usuários
 db.exec(`
     INSERT OR IGNORE INTO wallets (user_id, kind, balance)
-        SELECT id, 'solo', 1000000 FROM users;
+        SELECT id, 'solo', 10000 FROM users;
     INSERT OR IGNORE INTO wallets (user_id, kind, balance)
-        SELECT id, 'coop', 1000000 FROM users;
-    INSERT OR IGNORE INTO wallets (user_id, kind, balance)
-        SELECT id, 'duel', 1000000 FROM users;
-`);
-
-// Contas criadas com o saldo antigo (10k/1k) sobem para 1M no boot
-db.exec(`
-    UPDATE wallets SET balance = 1000000 WHERE kind = 'solo' AND balance = 10000;
-    UPDATE wallets SET balance = 1000000 WHERE kind = 'coop' AND balance = 10000;
-    UPDATE wallets SET balance = 1000000 WHERE kind = 'duel' AND balance = 1000;
+        SELECT id, 'duel', 1000 FROM users;
 `);
 
 // ========================================
@@ -231,12 +223,15 @@ function transaction(fn) {
 }
 
 // ========================================
-// CARTEIRA: débito/crédito com transação + log
+// CARTEIRA: débito/crédito com transação + log + evento realtime (v0.9.7)
+// Toda transação de carteira passa por aqui — é o gargalo único.
+// Depois de persistir, emite balance:changed no barramento com o kind
+// da carteira tocada (solo/coop/duel) — cada uma atualiza independente.
 // ========================================
 
 function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
     return transaction(() => {
-        const wallet = db.get("SELECT id, balance FROM wallets WHERE id = ?", [walletId]);
+        const wallet = db.get("SELECT id, user_id, kind, balance FROM wallets WHERE id = ?", [walletId]);
         if (!wallet) throw new Error("Carteira não encontrada.");
 
         const newBalance = wallet.balance + delta;
@@ -255,18 +250,34 @@ function adjustBalance(walletId, delta, kind, refType = null, refId = null) {
             [walletId, kind, delta, newBalance, refType, refId]
         );
 
+        // realtime: só o dono da carteira recebe (sala user:<id>)
+        emitBalanceChange({
+            userId: wallet.user_id,
+            kind: wallet.kind,
+            balance: newBalance,
+            delta,
+        });
+
         return newBalance;
     });
 }
 
-// Carteira por tipo (solo | coop | duel) — cria se não existir — 1.000.000 AC (config do William)
+// Carteira por tipo (solo | coop | duel) — cria se não existir
 function getWallet(userId, kind = "solo") {
     return transaction(() => {
         let w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
         if (!w) {
-            const initial = 1000000;
+            const initial = kind === "duel" ? 1000 : 10000;
             db.run("INSERT INTO wallets (user_id, kind, balance) VALUES (?, ?, ?)", [userId, kind, initial]);
             w = db.get("SELECT * FROM wallets WHERE user_id = ? AND kind = ?", [userId, kind]);
+
+            // carteira recém-criada também emite (estado inicial pro front)
+            emitBalanceChange({
+                userId,
+                kind,
+                balance: w.balance,
+                delta: initial,
+            });
         }
         return w;
     });
