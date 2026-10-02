@@ -1,5 +1,6 @@
 // ========================================
 // ARCADIA - AUTH ROUTES
+// v1.0.1: register cria as 3 carteiras (solo/coop/duel) com 1.000.000 AC
 // ========================================
 
 const express = require("express");
@@ -7,7 +8,6 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/database");
 const { authenticate, JWT_SECRET } = require("../middleware/auth");
-
 const router = express.Router();
 
 // ========================================
@@ -42,7 +42,6 @@ router.post("/register", async (req, res) => {
             `SELECT id FROM users WHERE LOWER(email) = LOWER(?) OR LOWER(username) = LOWER(?) LIMIT 1`,
             [normalizedEmail, normalizedUsername]
         );
-
         if (existing) {
             return res.status(409).json({ status: "error", message: "E-mail ou nome de usuário já cadastrado." });
         }
@@ -56,7 +55,10 @@ router.post("/register", async (req, res) => {
 
         const userId = result.lastInsertRowid;
 
-        await pool.run(`INSERT INTO wallets (user_id, balance) VALUES (?, ?)`, [userId, 10000]);
+        // Contas novas nascem com 1.000.000 AC em TODAS as carteiras (config do William)
+        await pool.run(`INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'solo', 1000000)`, [userId]);
+        await pool.run(`INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'coop', 1000000)`, [userId]);
+        await pool.run(`INSERT INTO wallets (user_id, kind, balance) VALUES (?, 'duel', 1000000)`, [userId]);
 
         const token = jwt.sign(
             { id: userId, username: normalizedUsername },
@@ -69,7 +71,7 @@ router.post("/register", async (req, res) => {
             message: "Conta criada com sucesso.",
             token,
             user: { id: userId, username: normalizedUsername, email: normalizedEmail },
-            wallet: { balance: 10000 },
+            wallet: { balance: 1000000 },
         });
     } catch (error) {
         console.error("Register error:", error.message);
@@ -92,7 +94,7 @@ router.post("/login", async (req, res) => {
         const user = await pool.get(
             `SELECT u.id, u.username, u.email, u.password_hash, w.balance
              FROM users AS u
-             INNER JOIN wallets AS w ON w.user_id = u.id
+             INNER JOIN wallets AS w ON w.user_id = u.id AND w.kind = 'solo'
              WHERE LOWER(u.email) = LOWER(?)
              LIMIT 1`,
             [String(email).trim().toLowerCase()]
@@ -196,7 +198,6 @@ router.patch("/profile", authenticate, async (req, res) => {
 // ========================================
 // PATCH /api/auth/password — trocar senha (v0.9.6)
 // ========================================
-
 router.patch("/password", authenticate, async (req, res) => {
     try {
         const { currentPassword, newPassword } = req.body;
@@ -233,7 +234,6 @@ router.patch("/password", authenticate, async (req, res) => {
 // Exige a senha. friend_favorites e rooms(host) não têm cascade —
 // limpa manualmente; todo o resto cai por ON DELETE CASCADE a partir de users.
 // ========================================
-
 router.delete("/account", authenticate, async (req, res) => {
     try {
         const user = await pool.get(`SELECT id, password_hash FROM users WHERE id = ?`, [req.user.id]);
@@ -254,7 +254,7 @@ router.delete("/account", authenticate, async (req, res) => {
         await pool.run(`DELETE FROM rooms WHERE host_id = ?`, [user.id]);
 
         // cascade: wallets(+transactions), bets, friendships, daily_bonus,
-        // user_achievements, user_missions, duel_stats, room_members
+        // user_achievements, user_missions, duel_stats, room_members, slots_cards
         await pool.run(`DELETE FROM users WHERE id = ?`, [user.id]);
 
         return res.json({ status: "success", message: "Conta deletada permanentemente." });
