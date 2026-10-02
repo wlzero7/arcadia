@@ -1,6 +1,6 @@
 // ========================================
-// ARCADIA SLOTS — cliente (v1.0)
-// Máquina com animação, trunfos e inventário
+// ARCADIA SLOTS — cliente (v1.1)
+// Máquina com animação, trunfos, inventário e sons v2.0
 // ========================================
 
 (() => {
@@ -82,15 +82,15 @@
         });
     }
 
-    // ---------- ANIMAÇÃO ----------
+    // ---------- ANIMAÇÃO + SONS ----------
     function animateSpin(finalReels) {
         reels.forEach((r) => r.classList.add("spinning"));
-        if (Sfx.rocket) Sfx.rocket();
+        Sfx.spinSlots();
         finalReels.forEach((emoji, i) => {
             setTimeout(() => {
                 reels[i].classList.remove("spinning");
                 reels[i].textContent = emoji;
-                if (Sfx.chip) Sfx.chip();
+                Sfx.reelStop(i);
             }, 700 + i * 350);
         });
         return 700 + finalReels.length * 350;
@@ -101,6 +101,7 @@
         if (spinning) return;
         if (!ArcadiaAPI.isLoggedIn()) {
             setMessage("Entre na sua conta para jogar.", "loss");
+            Sfx.error();
             return;
         }
 
@@ -124,13 +125,14 @@
             const machine = $("slotsMachine");
             if (data.jackpot) {
                 machine.classList.add("jackpot");
-                if (Sfx.win) Sfx.win();
+                Sfx.jackpot();
             } else if (data.outcome === "win") {
                 machine.classList.add("won");
-                if (Sfx.win) Sfx.win();
+                if (data.payout >= Number(betInput.value) * 8) Sfx.coinRain();
+                else Sfx.win();
             } else {
                 machine.classList.add("lost");
-                if (Sfx.lose) Sfx.lose();
+                Sfx.lose();
             }
             setTimeout(() => machine.classList.remove("jackpot", "won", "lost"), 1800);
 
@@ -145,7 +147,7 @@
             (data.notes || []).forEach((n) => addNote(n));
             if (data.card) {
                 addNote(`🎁 Nova carta: ${data.card.name} (${RARITY_LABEL[data.card.rarity]})!`);
-                if (Sfx.achievement) Sfx.achievement();
+                Sfx.cardDrop(data.card.rarity);
             }
 
             ArcadiaWallet.setCached(data.balance);
@@ -156,12 +158,16 @@
             await loadInventory();
         } catch (err) {
             setMessage(err.message, "loss");
+            Sfx.error();
             reels.forEach((r) => r.classList.remove("spinning"));
         } finally {
             spinning = false;
             spinBtn.disabled = false;
         }
     });
+
+    // som de seleção ao escolher trunfo
+    trumpSelect.addEventListener("change", () => Sfx.click());
 
     // ---------- INIT ----------
     (async function init() {
