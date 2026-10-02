@@ -1,13 +1,13 @@
 // ========================================
 // ARCADIA WALLET — server-backed (API) com cache local
-// v0.9.7: listener global balanceUpdate — atualiza TODOS os elementos
-// .wallet-balance / [data-wallet] com animação, roteando por kind
-// (solo/coop/duel independentes). Carrega em todas as páginas via wallet.js.
+// v1.0.1: saldo demo 50.000 AC + listener global balanceUpdate
+// (atualiza .wallet-balance / [data-wallet] com animação, por kind)
 // ========================================
 
 const ArcadiaWallet = (() => {
 
     const CACHE_KEY = "arcadia_wallet_balance";
+    const DEMO_BALANCE = 50000; // saldo demo (não logado)
 
     function format(value) {
         const n = Number(value) || 0;
@@ -16,7 +16,7 @@ const ArcadiaWallet = (() => {
 
     function getCached() {
         const v = Number(localStorage.getItem(CACHE_KEY));
-        return Number.isFinite(v) && v >= 0 ? v : 10000;
+        return Number.isFinite(v) && v >= 0 ? v : DEMO_BALANCE;
     }
 
     function setCached(value) {
