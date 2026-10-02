@@ -1,5 +1,6 @@
 // ========================================
-// ARCADIA ROULETTE — cliente
+// ARCADIA ROULETTE — cliente (v1.1)
+// v1.1: seletor de valor da aposta (chips) + remoção de ficha corrigida
 // ========================================
 
 (() => {
@@ -17,6 +18,29 @@
         dozen1: "1ª dúzia", dozen2: "2ª dúzia", dozen3: "3ª dúzia",
     };
 
+    // valor por clique — selecionável nos chips
+    let chipValue = 50;
+
+    // ---------- SELETOR DE FICHA ----------
+    function renderChipSelector() {
+        const row = $("chipSelector");
+        if (!row || row.dataset.built === "1") return;
+        row.dataset.built = "1";
+        [10, 50, 100, 500, 1000].forEach((v) => {
+            const b = document.createElement("button");
+            b.className = "chip-btn" + (v === chipValue ? " selected" : "");
+            b.textContent = v;
+            b.dataset.value = v;
+            b.addEventListener("click", () => {
+                chipValue = v;
+                row.querySelectorAll("button").forEach((x) => x.classList.remove("selected"));
+                b.classList.add("selected");
+                Sfx.chip();
+            });
+            row.appendChild(b);
+        });
+    }
+
     // ---------- MESA ----------
     const numbersEl = $("rlNumbers");
     for (let n = 1; n <= 36; n++) {
@@ -29,10 +53,10 @@
     }
 
     function addBet(type, value) {
-        // aposta padrão 50 AC por clique (simples e rápido)
         const existing = bets.find((b) => b.type === type && b.value === value);
-        if (existing) existing.amount += 50;
-        else bets.push({ type, value, amount: 50 });
+        if (existing) existing.amount += chipValue;
+        else bets.push({ type, value, amount: chipValue });
+        Sfx.chip();
         renderBets();
     }
 
@@ -50,9 +74,13 @@
                 box.appendChild(div);
             });
             box.querySelectorAll(".remove").forEach((x) => {
-                x.addEventListener("click", () => {
-                    bets.splice(Number(x.dataset.index ?? x.dataset.i), 1);
-                    renderBets();
+                x.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    const idx = Number(x.dataset.i);
+                    if (Number.isInteger(idx) && idx >= 0 && idx < bets.length) {
+                        bets.splice(idx, 1);
+                        renderBets();
+                    }
                 });
             });
         }
@@ -91,7 +119,6 @@
             // suspense
             await new Promise((r) => setTimeout(r, 1200));
 
-            $("rlResult").classList.remove("spin");
             const res = $("rlResult");
             res.classList.remove("spin");
             res.classList.remove("green", "red", "black");
@@ -145,6 +172,7 @@
 
     // ---------- INIT ----------
     (async () => {
+        renderChipSelector();
         if (ArcadiaAPI.isLoggedIn()) {
             await ArcadiaWallet.refresh();
             $("walletBalance").textContent = ArcadiaWallet.format(ArcadiaWallet.getCached());
