@@ -1,112 +1,560 @@
-/* ARCADIA - Salas Multiplayer */
+/* ================================
+   ARCADIA - SALAS MULTIPLAYER (v1.0 UI)
+   Modal animado, pote com glow, chat vivo
+   ================================ */
+
 .rooms-main { padding: 2rem 0 4rem; }
-.rooms-main h1 { font-size: 2.2rem; margin-bottom: .5rem; }
-.accent { color: var(--primary); }
+
+.rooms-main h1 {
+    font-size: 2.2rem;
+    margin-bottom: .5rem;
+    background: linear-gradient(90deg, var(--text), var(--primary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.accent { color: var(--primary); -webkit-text-fill-color: initial; }
+
 .rooms-main > .rooms-grid { margin-top: 1.5rem; }
+
 .muted { color: var(--text-secondary); font-size: .9rem; }
 
-.rooms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-.room-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; }
-.room-card h2 { margin-bottom: 1rem; font-size: 1.2rem; }
-.field { margin-bottom: .9rem; flex: 1; }
-.field label { display: block; font-size: .8rem; color: var(--text-secondary); margin-bottom: .3rem; }
-.field input, .field select {
-    width: 100%; padding: .6rem .8rem; border-radius: 10px;
-    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+.rooms-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
 }
-.field-row { display: flex; gap: .8rem; }
-.btn-block { width: 100%; margin-top: .5rem; }
-.code-input {
-    width: 100%; padding: .9rem; font-size: 1.6rem; text-align: center;
-    letter-spacing: .4em; text-transform: uppercase; border-radius: 12px;
-    border: 2px dashed var(--border); background: var(--bg); color: var(--text);
-    margin-bottom: .8rem;
-}
-.rooms-list { display: flex; flex-direction: column; gap: .5rem; max-height: 200px; overflow-y: auto; }
-.room-list-item {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: .6rem .9rem; border-radius: 10px; background: var(--bg);
-    border: 1px solid var(--border); cursor: pointer;
-}
-.room-list-item:hover { border-color: var(--primary); }
 
-/* Modal da sala */
-.room-modal {
-    background: var(--surface); border-radius: 20px; padding: 1.5rem;
-    width: min(920px, 95vw); max-height: 92vh; overflow-y: auto;
+.room-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
 }
-.room-modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; }
-.copy-btn { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--text-secondary); font-size: .7rem; padding: 2px 8px; cursor: pointer; margin-left: .5rem; }
-.copy-btn:hover { color: var(--text); }
+
+.room-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, .5), transparent);
+}
+
+.room-card h2 { margin-bottom: 1rem; font-size: 1.2rem; }
+
+/* ---------- FORMULÁRIOS ---------- */
+
+.field { margin-bottom: .9rem; flex: 1; }
+
+.field label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--text-secondary);
+    margin-bottom: .3rem;
+}
+
+.field input,
+.field select {
+    width: 100%;
+    padding: .6rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.field input:focus,
+.field select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+.field-row { display: flex; gap: .8rem; }
+
+.btn-block { width: 100%; margin-top: .5rem; }
+
+.code-input {
+    width: 100%;
+    padding: .9rem;
+    font-size: 1.6rem;
+    text-align: center;
+    letter-spacing: .4em;
+    text-transform: uppercase;
+    border-radius: 12px;
+    border: 2px dashed var(--border);
+    background: var(--background);
+    color: var(--text);
+    margin-bottom: .8rem;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.code-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15), 0 0 20px rgba(139, 92, 246, .12);
+    outline: none;
+}
+
+/* ---------- LISTA DE SALAS ---------- */
+
+.rooms-list {
+    display: flex;
+    flex-direction: column;
+    gap: .5rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.room-list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: .6rem .9rem;
+    border-radius: 10px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    cursor: pointer;
+    animation: itemIn .3s var(--ease-spring) both;
+    transition: border-color .2s ease, transform .15s var(--ease-spring);
+}
+
+.room-list-item:hover {
+    border-color: var(--primary);
+    transform: translateX(3px);
+}
+
+@keyframes itemIn {
+    from { opacity: 0; transform: translateX(-10px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- MODAL DA SALA ---------- */
+
+.room-modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    width: min(920px, 95vw);
+    max-height: 92vh;
+    overflow-y: auto;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .6);
+    animation: modalIn .3s var(--ease-spring);
+}
+
+@keyframes modalIn {
+    from { opacity: 0; transform: scale(.95) translateY(12px); }
+    to { opacity: 1; transform: none; }
+}
+
+.room-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.copy-btn {
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text-secondary);
+    font-size: .7rem;
+    padding: 2px 8px;
+    cursor: pointer;
+    margin-left: .5rem;
+    transition: color .15s ease, border-color .15s ease;
+}
+
+.copy-btn:hover {
+    color: var(--text);
+    border-color: var(--primary);
+}
+
+/* ---------- POTE ---------- */
 
 .pot-banner {
-    background: linear-gradient(135deg, rgba(124,58,237,.15), rgba(124,58,237,.05));
-    border: 1px solid var(--primary); border-radius: 14px;
-    padding: 1rem 1.2rem; margin-bottom: 1.2rem; text-align: center;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, .18), transparent 70%),
+        linear-gradient(135deg, rgba(124, 58, 237, .15), rgba(124, 58, 237, .05));
+    border: 1px solid var(--primary);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.2rem;
+    margin-bottom: 1.2rem;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(139, 92, 246, .12);
 }
-.pot-label { font-size: .75rem; letter-spacing: .15em; color: var(--text-secondary); }
-.pot-value { font-size: 2.4rem; font-weight: 800; color: var(--primary); margin: .2rem 0 .6rem; }
+
+.pot-label {
+    font-size: .75rem;
+    letter-spacing: .15em;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+}
+
+.pot-value {
+    font-size: 2.4rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin: .2rem 0 .6rem;
+    text-shadow: 0 0 24px rgba(139, 92, 246, .45);
+    font-variant-numeric: tabular-nums;
+    animation: potPulse 2s ease-in-out infinite;
+}
+
+@keyframes potPulse {
+    0%, 100% { text-shadow: 0 0 18px rgba(139, 92, 246, .35); }
+    50% { text-shadow: 0 0 32px rgba(139, 92, 246, .6); }
+}
+
 .pot-actions { display: flex; gap: .5rem; justify-content: center; }
-.pot-actions input { width: 130px; padding: .5rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
 
-.room-columns { display: grid; grid-template-columns: 1fr 1.4fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+.pot-actions input {
+    width: 130px;
+    padding: .5rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.pot-actions input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+/* ---------- COLUNAS / JOGADORES ---------- */
+
+.room-columns {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.2rem;
+}
+
 .room-col h3 { font-size: .95rem; margin-bottom: .6rem; }
-.players-list { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
-.players-list li {
-    display: flex; justify-content: space-between; padding: .5rem .8rem;
-    background: var(--bg); border-radius: 10px; font-size: .9rem;
-}
-.players-list .offline { opacity: .45; }
-.players-list .host-tag { color: var(--primary); font-size: .75rem; }
 
-.game-area { background: var(--bg); border-radius: 12px; padding: 1rem; min-height: 180px; display: flex; flex-direction: column; gap: .7rem; }
-.game-area .dice-big { font-size: 4rem; text-align: center; }
-.game-area .bet-row { display: flex; gap: .5rem; }
-.game-area input { flex: 1; padding: .55rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); }
-.number-pick { display: flex; gap: .4rem; justify-content: center; }
-.number-pick button {
-    width: 42px; height: 42px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--text); font-size: 1.1rem; cursor: pointer;
+.players-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
 }
-.number-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.2); }
+
+.players-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: .5rem .8rem;
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: .9rem;
+    animation: itemIn .3s var(--ease-spring) both;
+}
+
+.players-list .offline { opacity: .45; }
+
+.players-list .host-tag {
+    color: var(--primary);
+    font-size: .75rem;
+    font-weight: 700;
+}
+
+/* ---------- ÁREA DE JOGO ---------- */
+
+.game-area {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+}
+
+.game-area .dice-big {
+    font-size: 4rem;
+    text-align: center;
+    filter: drop-shadow(0 6px 16px rgba(139, 92, 246, .35));
+}
+
+.game-area .bet-row { display: flex; gap: .5rem; }
+
+.game-area input {
+    flex: 1;
+    padding: .55rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.game-area input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+.number-pick { display: flex; gap: .4rem; justify-content: center; }
+
+.number-pick button {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: transform .15s var(--ease-spring), border-color .15s ease, background .15s ease;
+}
+
+.number-pick button:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.number-pick button.selected {
+    border-color: var(--primary);
+    background: rgba(124, 58, 237, .2);
+    box-shadow: 0 0 12px rgba(139, 92, 246, .3);
+}
+
 .side-pick { display: flex; gap: .5rem; justify-content: center; }
-.side-pick button { flex: 1; padding: .7rem; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: 1rem; }
-.side-pick button.selected { border-color: var(--primary); background: rgba(124,58,237,.2); }
-.game-result { text-align: center; font-size: 1rem; min-height: 1.4rem; }
+
+.side-pick button {
+    flex: 1;
+    padding: .7rem;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: transform .15s var(--ease-spring), border-color .15s ease, background .15s ease;
+}
+
+.side-pick button:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.side-pick button.selected {
+    border-color: var(--primary);
+    background: rgba(124, 58, 237, .2);
+    box-shadow: 0 0 12px rgba(139, 92, 246, .3);
+}
+
+.game-result {
+    text-align: center;
+    font-size: 1rem;
+    min-height: 1.4rem;
+    font-weight: 600;
+    animation: msgIn .3s var(--ease-spring);
+}
+
 .game-result.win { color: var(--success); }
 .game-result.loss { color: var(--danger); }
 
-.chat-log { background: var(--bg); border-radius: 12px; padding: .8rem; height: 220px; overflow-y: auto; font-size: .85rem; display: flex; flex-direction: column; gap: .35rem; }
-.chat-log .sys { color: var(--text-secondary); font-style: italic; font-size: .8rem; }
-.chat-log b { color: var(--primary); }
-.chat-input-row { display: flex; gap: .4rem; margin-top: .5rem; }
-.chat-input-row input { flex: 1; padding: .5rem .8rem; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); color: var(--text); }
+@keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
 
-.rounds { display: flex; flex-direction: column; gap: .4rem; max-height: 160px; overflow-y: auto; }
-.round-item { display: flex; justify-content: space-between; padding: .45rem .8rem; border-radius: 10px; background: var(--bg); font-size: .85rem; }
+/* ---------- CHAT ---------- */
+
+.chat-log {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: .8rem;
+    height: 220px;
+    overflow-y: auto;
+    font-size: .85rem;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+}
+
+.chat-log > div {
+    animation: chatIn .25s var(--ease-spring) both;
+}
+
+@keyframes chatIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+.chat-log .sys {
+    color: var(--text-secondary);
+    font-style: italic;
+    font-size: .8rem;
+}
+
+.chat-log b { color: var(--primary); }
+
+.chat-input-row { display: flex; gap: .4rem; margin-top: .5rem; }
+
+.chat-input-row input {
+    flex: 1;
+    padding: .5rem .8rem;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--background);
+    color: var(--text);
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.chat-input-row input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
+    outline: none;
+}
+
+/* ---------- RODADAS ---------- */
+
+.rounds {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    max-height: 160px;
+    overflow-y: auto;
+}
+
+.round-item {
+    display: flex;
+    justify-content: space-between;
+    padding: .45rem .8rem;
+    border-radius: 10px;
+    background: var(--background);
+    border: 1px solid var(--border);
+    font-size: .85rem;
+    animation: itemIn .3s var(--ease-spring) both;
+}
+
 .round-item.win { border-left: 3px solid var(--success); }
 .round-item.loss { border-left: 3px solid var(--danger); }
 
+/* ---------- TOAST ---------- */
+
 .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
-    background: var(--surface); border: 1px solid var(--primary); color: var(--text);
-    padding: .7rem 1.2rem; border-radius: 12px; transition: transform .3s ease; z-index: 200;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--primary);
+    color: var(--text);
+    padding: .7rem 1.2rem;
+    border-radius: 12px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, .5), 0 0 24px rgba(139, 92, 246, .2);
+    transition: transform .35s var(--ease-spring), opacity .3s ease;
+    opacity: 0;
+    z-index: 200;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
+
+.toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* ---------- ROLETA DO GRUPO (v0.9) ---------- */
+
+.rlm-out {
+    display: flex;
+    gap: .4rem;
+    flex-wrap: wrap;
+    margin-bottom: .6rem;
+}
+
+.rlm-out button {
+    padding: .45rem .7rem;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+    cursor: pointer;
+    font-size: .8rem;
+    font-weight: 600;
+    transition: transform .15s var(--ease-spring), border-color .15s ease, filter .15s ease;
+}
+
+.rlm-out button:hover {
+    transform: translateY(-2px);
+    border-color: var(--primary);
+}
+
+.rlm-out button.red {
+    background: linear-gradient(145deg, #ef4444, #b91c1c);
+    color: #fff;
+    border-color: #dc2626;
+}
+
+.rlm-out button.black {
+    background: linear-gradient(145deg, #2e2e2e, #111);
+    color: #fff;
+}
+
+.rlm-nums {
+    display: grid;
+    grid-template-columns: repeat(13, 1fr);
+    gap: .25rem;
+    margin-bottom: .7rem;
+}
+
+.rlm-nums button {
+    aspect-ratio: 1;
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-size: .7rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform .15s var(--ease-spring), filter .15s ease;
+}
+
+.rlm-nums button:hover {
+    transform: scale(1.12);
+    filter: brightness(1.25);
+}
+
+.rlm-nums button.red { background: linear-gradient(145deg, #ef4444, #b91c1c); }
+.rlm-nums button.black { background: linear-gradient(145deg, #2e2e2e, #111); }
+.rlm-nums button.green { background: linear-gradient(145deg, #22c55e, #15803d); }
+
+.rlm-bets {
+    display: flex;
+    flex-direction: column;
+    gap: .25rem;
+    margin-top: .5rem;
+    font-size: .8rem;
+}
+
+.rlm-last {
+    text-align: center;
+    font-weight: 700;
+    margin-bottom: .6rem;
+    color: var(--primary);
+    animation: msgIn .3s var(--ease-spring);
+}
+
+/* ---------- RESPONSIVO ---------- */
 
 @media (max-width: 800px) {
     .rooms-grid, .room-columns { grid-template-columns: 1fr; }
 }
-
-/* Roleta do grupo (v0.9) */
-.rlm-out { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .6rem; }
-.rlm-out button { padding: .45rem .7rem; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer; font-size: .8rem; }
-.rlm-out button.red { background: #dc2626; color: #fff; border-color: #dc2626; }
-.rlm-out button.black { background: #222; color: #fff; }
-.rlm-nums { display: grid; grid-template-columns: repeat(13, 1fr); gap: .25rem; margin-bottom: .7rem; }
-.rlm-nums button { aspect-ratio: 1; border: none; border-radius: 6px; color: #fff; font-size: .7rem; font-weight: 700; cursor: pointer; }
-.rlm-nums button.red { background: #dc2626; }
-.rlm-nums button.black { background: #222; }
-.rlm-nums button.green { background: #16a34a; }
-.rlm-bets { display: flex; flex-direction: column; gap: .25rem; margin-top: .5rem; font-size: .8rem; }
-.rlm-last { text-align: center; font-weight: 700; margin-bottom: .6rem; color: var(--primary); }
