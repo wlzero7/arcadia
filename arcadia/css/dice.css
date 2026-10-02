@@ -1,311 +1,239 @@
 /* ================================
-   HEADER
+   ARCADIA - DICE (v1.0 UI)
+   Dado 3D, seleção com glow, histórico animado
    ================================ */
 
-.header {
-    border-bottom: 1px solid var(--border);
-
-    background: rgba(8, 11, 18, 0.95);
-}
-
-.navbar {
-    min-height: 72px;
-
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    gap: 25px;
-}
-
-.logo {
-    font-size: 1.5rem;
-    font-weight: 800;
-
-    letter-spacing: 3px;
-}
-
-.logo span {
-    color: var(--primary);
-}
-
-.game-navigation a {
-    color: var(--text-secondary);
-
-    font-size: 0.9rem;
-}
-
-.game-navigation a:hover {
-    color: var(--text);
-}
-
-
-/* ================================
-   WALLET
-   ================================ */
-
-.wallet {
-    display: flex;
-    flex-direction: column;
-
-    align-items: flex-end;
-}
-
-.wallet span {
-    color: var(--text-secondary);
-
-    font-size: 0.75rem;
-}
-
-.wallet strong {
-    color: var(--secondary);
-
-    font-size: 1.05rem;
-}
-
-
-/* ================================
-   PAGE
-   ================================ */
+/* ---------- PÁGINA ---------- */
 
 .dice-page {
-    padding: 65px 0 100px;
+    padding: 48px 0 100px;
 }
 
 .game-header {
-    margin-bottom: 40px;
+    margin-bottom: 36px;
 }
 
 .eyebrow {
     color: var(--secondary);
-
     font-size: 0.7rem;
     font-weight: 700;
-
     letter-spacing: 3px;
-
     margin-bottom: 12px;
 }
 
 .game-header h1 {
-    font-size: 3rem;
-
-    margin-bottom: 12px;
+    font-size: 2.6rem;
+    margin-bottom: 10px;
+    background: linear-gradient(90deg, var(--text), var(--secondary));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .game-header p:last-child {
     max-width: 650px;
-
     color: var(--text-secondary);
-
     line-height: 1.7;
 }
 
-
-/* ================================
-   LAYOUT
-   ================================ */
+/* ---------- LAYOUT ---------- */
 
 .dice-layout {
     display: grid;
-
-    grid-template-columns:
-        minmax(0, 2fr)
-        minmax(300px, 1fr);
-
+    grid-template-columns: minmax(0, 2fr) minmax(300px, 1fr);
     gap: 25px;
+    align-items: start;
 }
 
-
-/* ================================
-   GAME
-   ================================ */
+/* ---------- GAME CARD ---------- */
 
 .dice-game {
     background: var(--surface);
-
     border: 1px solid var(--border);
-    border-radius: 18px;
-
-    padding: 35px;
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    box-shadow: var(--shadow-card);
+    position: relative;
+    overflow: hidden;
 }
 
+/* filete de luz no topo do card */
+.dice-game::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(139, 92, 246, .6), transparent);
+}
 
-/* ================================
-   DICE
-   ================================ */
+/* ---------- DADO ---------- */
 
 .dice-display {
-    min-height: 230px;
-
+    min-height: 240px;
     display: flex;
     flex-direction: column;
-
     align-items: center;
     justify-content: center;
-
-    background: var(--background);
-
+    background:
+        radial-gradient(400px 200px at 50% 0%, rgba(139, 92, 246, .12), transparent 70%),
+        var(--background);
     border: 1px solid var(--border);
-    border-radius: 14px;
-
-    margin-bottom: 35px;
+    border-radius: var(--radius-md);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
 }
 
 .dice {
-    width: 105px;
-    height: 105px;
-
+    width: 108px;
+    height: 108px;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    background: var(--primary);
+    background: linear-gradient(145deg, #a78bfa, #7c3aed);
+    border-radius: 22px;
+    box-shadow:
+        inset 0 -6px 12px rgba(0, 0, 0, .25),
+        inset 0 4px 8px rgba(255, 255, 255, .25),
+        0 10px 30px rgba(139, 92, 246, .35);
 
-    border-radius: 20px;
-
-    font-size: 3.5rem;
+    font-size: 3.4rem;
     font-weight: 800;
+    color: #fff;
+    text-shadow: 0 2px 6px rgba(0, 0, 0, .35);
 
     margin-bottom: 20px;
-
-    transition:
-        transform 0.25s ease;
+    transition: transform .3s var(--ease-spring), box-shadow .3s ease;
 }
 
+.dice:hover {
+    transform: translateY(-4px) rotate(-4deg);
+    box-shadow:
+        inset 0 -6px 12px rgba(0, 0, 0, .25),
+        inset 0 4px 8px rgba(255, 255, 255, .25),
+        0 16px 40px rgba(139, 92, 246, .5);
+}
+
+/* rolagem: tumba em 2 eixos com leve escala */
 .dice.rolling {
-    animation: diceRoll 0.15s linear infinite;
+    animation: diceRoll .5s cubic-bezier(.36, .07, .19, .97) infinite;
 }
 
 @keyframes diceRoll {
-
-    0% {
-        transform: rotate(0deg);
-    }
-
-    50% {
-        transform:
-            rotate(15deg)
-            scale(1.05);
-    }
-
-    100% {
-        transform:
-            rotate(-15deg);
-    }
-
+    0%   { transform: rotate(0deg) translateY(0) scale(1); }
+    25%  { transform: rotate(90deg) translateY(-10px) scale(1.06); }
+    50%  { transform: rotate(180deg) translateY(0) scale(1); }
+    75%  { transform: rotate(270deg) translateY(-10px) scale(1.06); }
+    100% { transform: rotate(360deg) translateY(0) scale(1); }
 }
 
 .dice-display p {
     color: var(--text-secondary);
-
     text-align: center;
+    padding: 0 1rem;
 }
 
-
-/* ================================
-   GAME SECTION
-   ================================ */
+/* ---------- SEÇÕES ---------- */
 
 .game-section {
-    margin-bottom: 30px;
+    margin-bottom: 28px;
 }
 
 .game-section h2,
 .game-section label {
     display: block;
-
-    font-size: 0.9rem;
-    font-weight: 600;
-
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--text-secondary);
     margin-bottom: 12px;
 }
 
-
-/* ================================
-   NUMBER SELECTOR
-   ================================ */
+/* ---------- SELETOR DE NÚMEROS ---------- */
 
 .number-selector {
     display: grid;
-
-    grid-template-columns:
-        repeat(6, 1fr);
-
+    grid-template-columns: repeat(6, 1fr);
     gap: 10px;
 }
 
 .number-button {
-    height: 55px;
-
+    height: 58px;
     background: var(--background);
-
     border: 1px solid var(--border);
-    border-radius: 9px;
-
+    border-radius: var(--radius-sm);
     color: var(--text);
-
     font-weight: 700;
-
+    font-size: 1.05rem;
+    position: relative;
     transition:
         background 0.2s ease,
-        border 0.2s ease,
-        transform 0.2s ease;
+        border-color 0.2s ease,
+        transform 0.18s var(--ease-spring),
+        box-shadow 0.2s ease;
 }
 
 .number-button:hover {
-    transform: translateY(-2px);
-
+    transform: translateY(-3px);
     border-color: var(--primary);
+    box-shadow: 0 6px 18px rgba(139, 92, 246, .25);
+}
+
+.number-button:active {
+    transform: translateY(0) scale(.95);
 }
 
 .number-button.selected {
-    background: var(--primary);
-
+    background: linear-gradient(145deg, #a78bfa, #7c3aed);
     border-color: var(--primary);
+    color: #fff;
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .25), 0 8px 24px rgba(139, 92, 246, .4);
+    animation: numberPop .25s var(--ease-spring);
 }
 
+@keyframes numberPop {
+    0% { transform: scale(.9); }
+    60% { transform: scale(1.08); }
+    100% { transform: scale(1.04); }
+}
 
-/* ================================
-   BET
-   ================================ */
+/* ---------- APOSTA ---------- */
 
 .bet-input-wrapper {
     display: flex;
-
     background: var(--background);
-
     border: 1px solid var(--border);
-    border-radius: 9px;
-
+    border-radius: var(--radius-sm);
     overflow: hidden;
+    transition: border-color .2s ease, box-shadow .2s ease;
+}
+
+.bet-input-wrapper:focus-within {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
 }
 
 .bet-input-wrapper input {
     flex: 1;
-
     min-width: 0;
-
     background: transparent;
-
     border: none;
     outline: none;
-
     color: var(--text);
-
     padding: 13px 15px;
-
     font: inherit;
 }
 
 .bet-input-wrapper span {
     display: flex;
     align-items: center;
-
     padding: 0 15px;
-
     color: var(--secondary);
-
     font-size: 0.8rem;
     font-weight: 700;
 }
@@ -313,262 +241,268 @@
 .quick-bets {
     display: flex;
     flex-wrap: wrap;
-
     gap: 8px;
-
     margin-top: 10px;
 }
 
 .quick-bets button {
     background: transparent;
-
     border: 1px solid var(--border);
-    border-radius: 7px;
-
-    padding: 7px 12px;
-
+    border-radius: 999px;
+    padding: 7px 14px;
     color: var(--text-secondary);
+    font-size: .85rem;
+    font-weight: 600;
+    transition:
+        color .15s ease,
+        border-color .15s ease,
+        background .15s ease,
+        transform .15s var(--ease-spring);
 }
 
 .quick-bets button:hover {
     color: var(--text);
-
     border-color: var(--primary);
-}
-
-
-/* ================================
-   PLAY BUTTON
-   ================================ */
-
-.roll-button {
-    width: 100%;
-
-    border: none;
-    border-radius: 10px;
-
-    padding: 15px;
-
-    background: var(--primary);
-
-    color: white;
-
-    font-weight: 700;
-    font-size: 1rem;
-
-    transition:
-        background 0.2s ease,
-        transform 0.2s ease;
-}
-
-.roll-button:hover {
-    background: var(--primary-hover);
-
+    background: rgba(139, 92, 246, .1);
     transform: translateY(-2px);
 }
 
-.roll-button:disabled {
-    opacity: 0.6;
+.quick-bets button:active {
+    transform: scale(.94);
+}
 
+/* ---------- BOTÃO JOGAR ---------- */
+
+/* estiliza tanto .roll-button (legado) quanto .btn-primary (padrão atual) */
+.roll-button,
+.dice-game .btn-primary {
+    width: 100%;
+    border: none;
+    border-radius: var(--radius-sm);
+    padding: 15px;
+    background: linear-gradient(135deg, var(--primary), #6d28d9);
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    letter-spacing: .02em;
+    box-shadow: 0 6px 20px rgba(139, 92, 246, .3);
+    transition:
+        background 0.2s ease,
+        transform 0.15s var(--ease-spring),
+        box-shadow 0.2s ease;
+}
+
+.roll-button:hover,
+.dice-game .btn-primary:hover {
+    background: linear-gradient(135deg, #9d74f8, var(--primary-hover));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(139, 92, 246, .45);
+}
+
+.roll-button:active,
+.dice-game .btn-primary:active {
+    transform: translateY(1px) scale(.98);
+}
+
+.roll-button:disabled,
+.dice-game .btn-primary:disabled {
+    opacity: .55;
     cursor: not-allowed;
-
     transform: none;
+    box-shadow: none;
 }
 
-.game-message {
-    min-height: 22px;
-
+/* mensagem de resultado com entrada animada */
+.game-message,
+.game-result {
+    min-height: 24px;
     margin-top: 15px;
-
     text-align: center;
-
     color: var(--text-secondary);
-
-    font-size: 0.9rem;
+    font-size: 0.92rem;
+    font-weight: 600;
+    animation: msgIn .3s var(--ease-spring);
 }
 
+.game-result.win { color: var(--success); }
+.game-result.loss { color: var(--danger); }
 
-/* ================================
-   HISTORY
-   ================================ */
+@keyframes msgIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: none; }
+}
+
+/* ---------- HISTÓRICO ---------- */
 
 .history-panel {
     background: var(--surface);
-
     border: 1px solid var(--border);
-    border-radius: 18px;
-
+    border-radius: var(--radius-lg);
     padding: 25px;
+    box-shadow: var(--shadow-card);
 }
 
 .history-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
     gap: 15px;
-
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
 .history-header span {
     color: var(--secondary);
-
     font-size: 0.65rem;
     font-weight: 700;
-
     letter-spacing: 2px;
 }
 
 .history-header h2 {
     margin-top: 4px;
-
     font-size: 1.3rem;
 }
 
-.history-header button {
+.history-header button,
+.history-header .remove-btn {
     background: transparent;
-
-    border: none;
-
+    border: 1px solid transparent;
+    border-radius: 8px;
     color: var(--text-secondary);
-
     font-size: 0.8rem;
+    padding: 4px 10px;
+    transition: color .15s ease, border-color .15s ease;
 }
 
-.history-header button:hover {
+.history-header button:hover,
+.history-header .remove-btn:hover {
     color: var(--text);
+    border-color: var(--border);
 }
 
-
-/* ================================
-   STATISTICS
-   ================================ */
-
-.statistics {
+/* estatísticas da sessão (.statistics legado + .session-stats atual) */
+.statistics,
+.session-stats {
     display: grid;
-
-    grid-template-columns:
-        repeat(3, 1fr);
-
+    grid-template-columns: repeat(3, 1fr);
     gap: 8px;
-
-    margin-bottom: 25px;
+    margin-bottom: 22px;
 }
 
-.statistics div {
+.statistics div,
+.session-stats div {
     background: var(--background);
-
     border: 1px solid var(--border);
-    border-radius: 9px;
-
+    border-radius: var(--radius-sm);
     padding: 12px;
-
     text-align: center;
+    transition: border-color .2s ease, transform .2s var(--ease-spring);
 }
 
-.statistics span {
+.statistics div:hover,
+.session-stats div:hover {
+    border-color: rgba(139, 92, 246, .4);
+    transform: translateY(-2px);
+}
+
+.statistics span,
+.session-stats span {
     display: block;
-
     color: var(--text-secondary);
-
     font-size: 0.65rem;
-
+    text-transform: uppercase;
+    letter-spacing: .06em;
     margin-bottom: 5px;
 }
 
-.statistics strong {
-    font-size: 1.1rem;
+.statistics strong,
+.session-stats strong {
+    font-size: 1.15rem;
 }
 
-
-/* ================================
-   HISTORY LIST
-   ================================ */
+/* ---------- LISTA DE RODADAS ---------- */
 
 .history-list {
     display: flex;
     flex-direction: column;
-
     gap: 8px;
+    max-height: 420px;
+    overflow-y: auto;
+    padding-right: 4px;
 }
 
 .empty-history {
     color: var(--text-secondary);
-
     font-size: 0.85rem;
-
     text-align: center;
-
     padding: 30px 0;
 }
 
 .history-item {
     display: flex;
     justify-content: space-between;
-
     gap: 15px;
-
     background: var(--background);
-
     border: 1px solid var(--border);
-    border-radius: 9px;
-
+    border-left: 3px solid var(--border);
+    border-radius: var(--radius-sm);
     padding: 12px;
+    animation: itemIn .35s var(--ease-spring) both;
+    transition: border-color .2s ease, transform .2s var(--ease-spring);
+}
+
+.history-item:hover {
+    transform: translateX(3px);
+}
+
+@keyframes itemIn {
+    from { opacity: 0; transform: translateX(-14px); }
+    to { opacity: 1; transform: none; }
 }
 
 .history-item div {
     display: flex;
     flex-direction: column;
-
     gap: 3px;
 }
 
 .history-item span {
     color: var(--text-secondary);
-
     font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
 }
 
 .history-item strong {
-    font-size: 0.85rem;
+    font-size: 0.88rem;
 }
 
-.history-item.win strong:last-child {
-    color: var(--success);
+.history-item.win {
+    border-left-color: var(--success);
 }
 
-.history-item.loss strong:last-child {
-    color: var(--danger);
+.history-item.loss {
+    border-left-color: var(--danger);
 }
 
+.history-item.win strong:last-child { color: var(--success); }
+.history-item.loss strong:last-child { color: var(--danger); }
 
-/* ================================
-   RESPONSIVE
-   ================================ */
+/* ---------- RESPONSIVO ---------- */
 
 @media (max-width: 850px) {
-
     .dice-layout {
         grid-template-columns: 1fr;
     }
-
 }
 
-
 @media (max-width: 600px) {
-
-    .game-navigation {
-        display: none;
-    }
-
     .number-selector {
-        grid-template-columns:
-            repeat(3, 1fr);
+        grid-template-columns: repeat(3, 1fr);
     }
-
     .dice-game {
         padding: 22px;
     }
-
+    .game-header h1 {
+        font-size: 2rem;
+    }
 }
