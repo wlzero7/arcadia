@@ -1,7 +1,7 @@
 // ========================================
 // ARCADIA - SERVER (Express + Socket.IO + SQLite)
-// v1.0.1: /api/games/slots montado ANTES do /api/games
-// (o coringa /:game/play do game.routes sequestrava a rota do Slots)
+// v1.0.2: /api/games/slots montado ANTES do /api/games
+// (o coringa /:game/play sequestrava a rota do Slots → "Jogo não encontrado")
 // ========================================
 
 require("dotenv").config();
@@ -26,7 +26,6 @@ const { setupBlackjackMultiplayer } = require("./realtime/blackjack-mp");
 const { setupRacing } = require("./realtime/racing");
 const { setupDuels } = require("./realtime/duels");
 const { initInvites } = require("./realtime/invites");
-const { initBalanceSocket } = require("./realtime/balance-socket");
 const progression = require("./services/progression.routes");
 
 const app = express();
@@ -139,7 +138,6 @@ setupBlackjackMultiplayer(io);
 setupRacing(io);
 setupDuels(io);
 initInvites(io);
-initBalanceSocket(io);
 
 // ========================================
 // START
