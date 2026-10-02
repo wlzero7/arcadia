@@ -1,7 +1,7 @@
 // ========================================
 // ARCADIA - GAME ROUTES (jogos solo, server-side)
-// v1.0.1: fix do dado — cliente envia { number: X }, servidor agora lê o objeto
-// (antes: Number({number:1}) = NaN → roll === NaN sempre falso → nunca ganhava)
+// v1.0.2: fix do dado ({ number: X }) + getWallet("solo") em TODOS os jogos
+// (a query crua sem kind podia pegar a carteira coop/duel com 0 → "Saldo insuficiente")
 // ========================================
 
 const express = require("express");
@@ -127,10 +127,8 @@ router.post("/:game/play", authenticate, async (req, res) => {
     }
 
     try {
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet) {
-            return res.status(404).json({ status: "error", message: "Carteira não encontrada." });
-        }
+        // v1.0.2: getWallet garante a carteira SOLO correta (cria com 1M se não existir)
+        const wallet = await pool.getWallet(req.user.id, "solo");
         if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
         }
@@ -201,8 +199,9 @@ router.post("/mines/start", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet || wallet.balance < wager) {
+        // v1.0.2: getWallet garante a carteira SOLO correta
+        const wallet = await pool.getWallet(req.user.id, "solo");
+        if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
         }
 
@@ -347,8 +346,9 @@ router.post("/crash/start", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet || wallet.balance < wager) {
+        // v1.0.2: getWallet garante a carteira SOLO correta
+        const wallet = await pool.getWallet(req.user.id, "solo");
+        if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
         }
 
@@ -728,8 +728,9 @@ router.post("/plinko/drop", authenticate, async (req, res) => {
             return res.status(400).json({ status: "error", message: "Aposta mínima: 10 AC." });
         }
 
-        const wallet = await pool.get("SELECT id, balance FROM wallets WHERE user_id = ?", [req.user.id]);
-        if (!wallet || wallet.balance < wager) {
+        // v1.0.2: getWallet garante a carteira SOLO correta
+        const wallet = await pool.getWallet(req.user.id, "solo");
+        if (wallet.balance < wager) {
             return res.status(400).json({ status: "error", message: "Saldo insuficiente." });
         }
 
