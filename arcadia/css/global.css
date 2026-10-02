@@ -1,6 +1,8 @@
 /* ================================
-   ARCADIA - GLOBAL STYLES (v1.0 UI)
+   ARCADIA - GLOBAL STYLES (v1.1 UI)
    Identidade: dark + roxo/ciano, vidro, glow suave
+   v1.1: estilização base de formulários — mata a caixa branca
+   em TODOS os inputs/selects crus do site (dice, duel, slots, etc.)
    ================================ */
 
 * {
@@ -38,6 +40,9 @@
     --shadow-card: 0 10px 30px rgba(0, 0, 0, .35);
     --shadow-glow: 0 0 24px rgba(139, 92, 246, .18);
     --ease-spring: cubic-bezier(.22, 1, .36, 1);
+
+    /* widgets nativos (dropdown, spinner, datepicker) no tema escuro */
+    color-scheme: dark;
 }
 
 html {
@@ -83,6 +88,44 @@ ul {
 
 .muted {
     color: var(--text-secondary);
+}
+
+/* ================================
+   FORMULÁRIOS — base global (v1.1)
+   Todo input/select/textarea cru herda o tema escuro.
+   Regras mais específicas (.field input, .bet-input-wrapper, etc.)
+   continuam valendo por cima — nada quebra.
+   ================================ */
+
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+    background: var(--background);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font: inherit;
+    padding: .6rem .8rem;
+    outline: none;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+input::placeholder,
+textarea::placeholder {
+    color: var(--text-secondary);
+}
+
+select {
+    cursor: pointer;
+}
+
+select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+textarea {
+    resize: vertical;
 }
 
 /* ================================
@@ -289,14 +332,10 @@ ul {
 }
 
 /* ================================
-   INPUTS
+   INPUTS — foco (v1.1: cobre também a base global)
    ================================ */
 
-input, select {
-    transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
-}
-
-input:focus, select:focus {
+input:focus, select:focus, textarea:focus {
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(139, 92, 246, .15);
     outline: none;
@@ -331,7 +370,7 @@ input:focus, select:focus {
 
 ::selection { background: rgba(139, 92, 246, .4); }
 
-button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible {
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, a:focus-visible {
     outline: 2px solid var(--primary);
     outline-offset: 2px;
 }
